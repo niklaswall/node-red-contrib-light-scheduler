@@ -10,6 +10,13 @@
   "keywords": [
     "node-red"
   ],
+  "bugs":{
+      "url": "https://github.com/niklaswall/node-red-contrib-light-scheduler/issues"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/niklaswall/node-red-contrib-light-scheduler.git"
+  },
   "node-red": {
     "nodes": {
       "light-scheduler": "light-scheduler.js",
