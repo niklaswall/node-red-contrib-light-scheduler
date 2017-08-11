@@ -4,18 +4,19 @@
   "author": "Niklas Wall",
   "description": "Light Scheduler is a node-red node that provides a weekly schedule, and is mainly focused on controlling light in home automation scenarios.",
   "dependencies": {
+    "request": "^2.81.0",
     "suncalc": "^1.8.0",
     "util": "^0.10.3"
   },
   "keywords": [
     "node-red"
   ],
-  "bugs":{
-      "url": "https://github.com/niklaswall/node-red-contrib-light-scheduler/issues"
+  "bugs": {
+    "url": "https://github.com/niklaswall/node-red-contrib-light-scheduler/issues"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/niklaswall/node-red-contrib-light-scheduler.git"
+    "type": "git",
+    "url": "https://github.com/niklaswall/node-red-contrib-light-scheduler.git"
   },
   "node-red": {
     "nodes": {
