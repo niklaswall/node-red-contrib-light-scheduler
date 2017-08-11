@@ -1,0 +1,29 @@
+<script type="text/javascript">
+    RED.nodes.registerType('light-scheduler-settings',{
+        category: 'config',
+        defaults: {
+            name: {value: 'my settings', required:true},
+            latitude: {value: 63.253406, required:true, validate:RED.validators.number()},
+            longitude: {value: 18.722509, required:true, validate:RED.validators.number()},
+        },
+        label: function() {
+            return this.name;
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="light-scheduler-settings">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="icon-bookmark"></i> Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-config-input-latitude"><i class="icon-globe"></i> Latitude</label>
+        <input type="text" id="node-config-input-latitude">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-longitude"><i class="icon-globe"></i> Longitude</label>
+        <input type="text" id="node-config-input-longitude">
+    </div>
+</script>
