@@ -15,6 +15,7 @@ module.exports = function(RED) {
 		this.onPayloadType = n.onPayloadType;
 		this.offPayload = n.offPayload;
 		this.offPayloadType = n.offPayloadType;
+                this.onlyWhenDark = n.onlyWhenDark;
         this.prevPayload = null;
 		var node = this;
 
@@ -56,10 +57,10 @@ module.exports = function(RED) {
             var yesterday = SunCalc.getTimes(ts_yesterday, node.settings.latitude, node.settings.longitude);
             var yesterday_down = yesterday.goldenHour;
             var today = SunCalc.getTimes(ts_now, node.settings.latitude, node.settings.longitude);
-            var today_up = today.golderHourEnd;
+            var today_up = today.goldenHourEnd;
             var today_down = today.goldenHour;
             var tomorrow = SunCalc.getTimes(ts_tomorrow, node.settings.latitude, node.settings.longitude);
-            var tomorrow_up = tomorrow.golderHourEnd;
+            var tomorrow_up = tomorrow.goldenHourEnd;
 
             var darkFrom = ts_now <= today_up ? yesterday_down : today_down;
             var darkUntil = ts_now <= today_up ? today_up : tomorrow_up;
@@ -91,7 +92,14 @@ module.exports = function(RED) {
                     }
                 }
             });
-            setState(duringEvent && isItDark());
+
+            if(!duringEvent)
+              return setState(false);
+
+            if(node.onlyWhenDark)
+              return setState(isItDark());
+            
+            return setState(true);
         }
 
 		node.on('input', function(msg) {

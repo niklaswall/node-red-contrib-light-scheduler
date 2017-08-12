@@ -30,6 +30,10 @@
 		<input type="text" id="node-input-offPayload" placeholder="OFF"></input>
 		<input type="hidden" id="node-input-offPayloadType"></input>
 	</div>
+	<div class="form-row">
+		<label for="node-input-onlyWhenDark">Only when dark</label>
+                <input type="checkbox" id="node-input-onlyWhenDark"> 
+	</div>
 </script>
 
 <script type="text/x-red" data-help-name="light-scheduler">
@@ -59,7 +63,8 @@
 			onPayload: {value:"ON", validate: RED.validators.typedInput("onPayloadType")},
 			onPayloadType: {value:"str"},
 			offPayload: {value:"OFF", validate: RED.validators.typedInput("offPayloadType")},
-			offPayloadType: {value:"str"}
+			offPayloadType: {value:"str"},
+                        onlyWhenDark: {value: true}
 		},
 		inputs: 1,
 		outputs: 1,

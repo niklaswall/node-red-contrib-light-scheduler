@@ -9,11 +9,30 @@ Light Scheduler is a node-red node that provides a weekly schedule, and is mainl
 * Customizable on/off payloads (and topic).
 
 
-#### Planned features
+#### Planned features / changes
 - [ ] Override state based on input (on, off, auto etc).
 - [ ] Date-based schedule exceptions (for holidays etc).
 - [ ] Lux-based control (instead of sun-position based).
 - [ ] meta-data output (JSON data with information about current state and next change).
+- [ ] new better graphical schedule editor.
+
+
+#### Known Issues
+* The schedule is evaluated incorrect if ending exacly at midninght.
+* The schedule editor is lagging when resizing an event.
+* There seem to be some incompatibility with the Safari browser.
+
+#### Changelog
+
+##### v0.0.3.
+* Added "Only when dark" setting. If checked the On payload will only be sent when the schedule matches and it is dark.
+* Fixed some typos which prevented the "Only when dark" setting from working correctly.
+
+##### v0.0.2.
+* Fixed some missing dependencies.
+
+##### v0.0.1
+* Initial version
 
 ##### Credits
 
