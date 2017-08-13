@@ -16,6 +16,7 @@ module.exports = function(RED) {
 		this.offPayload = n.offPayload;
 		this.offPayloadType = n.offPayloadType;
                 this.onlyWhenDark = n.onlyWhenDark;
+                this.override = 'auto';
         this.prevPayload = null;
 		var node = this;
 
@@ -28,7 +29,8 @@ module.exports = function(RED) {
             else
                 msg.payload = RED.util.evaluateNodeProperty(node.offPayload, node.offPayloadType, node, msg);
 
-            node.status({fill: out?"green":"red", shape: "dot", text: msg.payload});
+            var overrideTxt = node.override == 'auto'?'':' (Override: ' + node.override + ')';
+            node.status({fill: out?"green":"red", shape: "dot", text: msg.payload + overrideTxt});
 
             // Only send anything if the state have changed.
             if(msg.payload !== node.prevPayload)
@@ -70,6 +72,13 @@ module.exports = function(RED) {
         }
 
         function evaluateSchedule() {
+            // Handle override state, if any.
+            if(node.override == 'on')
+              return setState(true);
+
+            if(node.override == 'off')
+              return setState(false);
+
             var duringEvent = false;
             node.events.map((event) => {
                 var now = new Date();
@@ -93,6 +102,13 @@ module.exports = function(RED) {
                 }
             });
 
+            if(node.override == 'schedule-only')
+              return setState(duringEvent);
+
+            if(node.override == 'light-only')
+              return setState(isItDark());
+
+            // node.override == auto
             if(!duringEvent)
               return setState(false);
 
@@ -103,7 +119,14 @@ module.exports = function(RED) {
         }
 
 		node.on('input', function(msg) {
-            //TODO: Evaluate msg.payload for different modes.
+                  if(msg.payload.match(/^(on|off|auto|schedule-only|light-only)$/i))
+                  {
+                    node.override = msg.payload.toLowerCase();;
+                    //console.log("Override: " + node.override);
+                  }
+                  else
+                    node.warn('Failed to interpret incomming msg.payload. Ignoring it!');
+                  
             evaluateSchedule();
 		});
 
