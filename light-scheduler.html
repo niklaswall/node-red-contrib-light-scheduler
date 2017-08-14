@@ -41,9 +41,9 @@
   <h3>Inputs</h3>
   <dl class="message-properties">
     <dt>payload <span class="property-type">string</span></dt>
-    <dd>The payload will be used to set the override-mode of the light scheduler.</dd>
     <dd>
-      Valid overrides:
+      <p>The payload will be used to set the override-mode of the light scheduler.</p>
+      <p>Valid overrides:
       <ol>
         <li>auto - Removes the override and act according to configuration.</li>
         <li>on - Forces output to ON state.</li>
@@ -52,6 +52,7 @@
         <li>schedule-only - Ignores the light level and turns ON according to schedule.</li>        
       </ol>
       <i>Please Note:</i> The override is runtime only and will revert to auto during deploy / restart.
+      </p>
     </dd>
   </dl>
 
