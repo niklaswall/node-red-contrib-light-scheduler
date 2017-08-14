@@ -5,7 +5,7 @@ module.exports = function(RED) {
   var util = require('util');
   var SunCalc = require('suncalc');
 
-  var lightScheduler = function(n) {
+  var LightScheduler = function(n) {
 
     RED.nodes.createNode(this, n);
     this.settings = RED.nodes.getNode(n.settings); // Get global settings
@@ -141,7 +141,7 @@ module.exports = function(RED) {
     });
 	};
 
-  RED.nodes.registerType("light-scheduler", lightScheduler);
+  RED.nodes.registerType("light-scheduler", LightScheduler);
 
   RED.httpAdmin.get('/light-scheduler/js/*', function(req,res) {
     var options = {
