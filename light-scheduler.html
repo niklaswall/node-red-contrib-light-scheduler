@@ -1,48 +1,59 @@
 <script type="text/x-red" data-template-name="light-scheduler">
-	<div class="form-row">
-		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-		<input type="text" id="node-input-name" placeholder="Name"></input>
-	</div>
-	<div class="form-row">
-		<label for="node-input-settings"><i class="fa fa-globe"></i> Globals</label>
-		<input type="text" id="node-input-settings"></input>
-	</div>
-	<div class="form-row">
-		<link rel='stylesheet' href='light-scheduler/js/jquery.weekcalendar.css' />
-		<style type="text/css">
-		.wc-business-hours {
-			font-size: 1.0em;
-		}
-		</style>
-		<div id="calendar" style="width: 100%; height: 500px; border: 1px solid grey"></div>
-	</div>
-	<div class="form-row">
-		<label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</label>
-		<input type="text" id="node-input-topic" placeholder="Topic"></input>
-	</div>
-	<div class="form-row">
-		<label for="node-input-onPayload"><i class="fa fa-envelope"></i> On Payload</label>
-		<input type="text" id="node-input-onPayload" placeholder="ON"></input>
-		<input type="hidden" id="node-input-onPayloadType"></input>
-	</div>
-	<div class="form-row">
-		<label for="node-input-offPayload"><i class="fa fa-envelope"></i> Off Payload</label>
-		<input type="text" id="node-input-offPayload" placeholder="OFF"></input>
-		<input type="hidden" id="node-input-offPayloadType"></input>
-	</div>
-	<div class="form-row">
-		<label for="node-input-onlyWhenDark">Only when dark</label>
-                <input type="checkbox" id="node-input-onlyWhenDark"> 
-	</div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name"></input>
+  </div>
+  <div class="form-row">
+    <label for="node-input-settings"><i class="fa fa-globe"></i> Globals</label>
+    <input type="text" id="node-input-settings"></input>
+  </div>
+  <div class="form-row">
+    <link rel='stylesheet' href='light-scheduler/js/jquery.weekcalendar.css' />
+    <style type="text/css">
+      .wc-business-hours {
+        font-size: 1.0em;
+      }
+    </style>
+    <div id="calendar" style="width: 100%; height: 500px; border: 1px solid grey"></div>
+  </div>
+  <div class="form-row">
+    <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</label>
+    <input type="text" id="node-input-topic" placeholder="Topic"></input>
+  </div>
+  <div class="form-row">
+    <label for="node-input-onPayload"><i class="fa fa-envelope"></i> On Payload</label>
+    <input type="text" id="node-input-onPayload" placeholder="ON"></input>
+    <input type="hidden" id="node-input-onPayloadType"></input>
+  </div>
+  <div class="form-row">
+    <label for="node-input-offPayload"><i class="fa fa-envelope"></i> Off Payload</label>
+    <input type="text" id="node-input-offPayload" placeholder="OFF"></input>
+    <input type="hidden" id="node-input-offPayloadType"></input>
+  </div>
+  <div class="form-row">
+    <label for="node-input-onlyWhenDark">Only when dark</label>
+    <input type="checkbox" id="node-input-onlyWhenDark"> 
+  </div>
 </script>
 
 <script type="text/x-red" data-help-name="light-scheduler">
-    <p>A node to control light based on a schedule and the sun position.</p>
-    <h3>Inputs</h3>
-    <dl class="message-properties">
-        <dt>payload <span class="property-type">string</span></dt>
-        <dd>The payload will be used to set the mode of the light scheduler.</dd>
-    </dl>
+  <p>A node to control light based on a schedule and the sun position.</p>
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">string</span></dt>
+    <dd>The payload will be used to set the override-mode of the light scheduler.</dd>
+    <dd>
+      Valid overrides:
+      <ol>
+        <li>auto - Removes the override and act according to configuration.</li>
+        <li>on - Forces output to ON state.</li>
+        <li>off - Forces output to OFF state.</li>
+        <li>light-only - Ignores the schedule and turns ON if it is considered dark.</li>
+        <li>schedule-only - Ignores the light level and turns ON according to schedule.</li>        
+      </ol>
+      <i>Please Note:</i> The override is runtime only and will revert to auto during deploy / restart.
+    </dd>
+  </dl>
 
   <h3>Output</h3>
   <dl class="message-properties">
@@ -52,107 +63,99 @@
 </script>
 
 <script type="text/javascript">
-	RED.nodes.registerType('light-scheduler', {
-		category: 'function',
-		color:"#DEBD5C",
-		defaults: {
-            settings: {value: "", type: "light-scheduler-settings"},
-			events: {value:"[]"},
-			topic: {value:""},
-			name: {value:""},
-			onPayload: {value:"ON", validate: RED.validators.typedInput("onPayloadType")},
-			onPayloadType: {value:"str"},
-			offPayload: {value:"OFF", validate: RED.validators.typedInput("offPayloadType")},
-			offPayloadType: {value:"str"},
-                        onlyWhenDark: {value: true}
+  RED.nodes.registerType('light-scheduler', {
+    category: 'function',
+    color:"#DEBD5C",
+    defaults: {
+      settings: {value: "", type: "light-scheduler-settings"},
+      events: {value:"[]"},
+      topic: {value:""},
+      name: {value:""},
+      onPayload: {value:"ON", validate: RED.validators.typedInput("onPayloadType")},
+      onPayloadType: {value:"str"},
+      offPayload: {value:"OFF", validate: RED.validators.typedInput("offPayloadType")},
+      offPayloadType: {value:"str"},
+      onlyWhenDark: {value: true}
 		},
-		inputs: 1,
-		outputs: 1,
+    inputs: 1,
+    outputs: 1,
 		icon: 'cal.png',
 		paletteLabel: 'Light Scheduler',
-		label: function(){
-			return this.name?this.name:'Light Scheduler'
-		},
+    label: function(){
+      return this.name?this.name:'Light Scheduler'
+    },
 		oneditprepare: function() {
-			var node = this;
-			var setup = function(n) {
-				var events = JSON.parse(n.events);
-				var id = events.length;
+      var node = this;
+      var setup = function(n) {
+        var events = JSON.parse(n.events);
+        var id = events.length;
 
-				$('#calendar').weekCalendar({
-					date: new Date('2018-01-01T00:00:00.000+00:00'),
-					minDate: new Date('2018-01-01T00:00:00.000+00:00'),
-					maxDate: new Date('2018-01-08T00:00:00.000+00:00'),
-					data: events,
-					timeslotHeight: 12,
-					timeslotsPerHour: 4,
-					defaultEventLength: 1,
-					use24Hour: true,
-					showHeader: false,
-                    firstDayOfWeek: 1,
-					getHeaderDate: function(date, element){
-						var d=['Sun', 'Mon','Tue','Wed','Thu','Fri','Sat'];
-						return d[date.getDay()];
-					},
-					height: function($calendar) {
-						return $('#calendar').parent().height();
-					},
-					newEventText: "",
-					eventBody: function(calEvent, calendar) {
-						return "";
-					},
-					eventNew: function(calEvent, $event) {
-						calEvent.id = id++;
-						calEvent.title = "";
-					},
-					eventClick: function(calEvent, $event) {
-						$('#calendar').weekCalendar('removeEvent', calEvent.id);
-					}
-				});
+        $('#calendar').weekCalendar({
+          date: new Date('2018-01-01T00:00:00.000+00:00'),
+          minDate: new Date('2018-01-01T00:00:00.000+00:00'),
+          maxDate: new Date('2018-01-08T00:00:00.000+00:00'),
+          data: events,
+          timeslotHeight: 12,
+          timeslotsPerHour: 4,
+          defaultEventLength: 1,
+          use24Hour: true,
+          showHeader: false,
+          firstDayOfWeek: 1,
+          getHeaderDate: function(date, element){
+            var d=['Sun', 'Mon','Tue','Wed','Thu','Fri','Sat'];
+            return d[date.getDay()];
+          },
+          height: function($calendar) {
+            return $('#calendar').parent().height();
+          },
+          newEventText: "",
+          eventBody: function(calEvent, calendar) {
+            return "";
+          },
+          eventNew: function(calEvent, $event) {
+            calEvent.id = id++;
+            calEvent.title = "";
+          },
+          eventClick: function(calEvent, $event) {
+            $('#calendar').weekCalendar('removeEvent', calEvent.id);
+          }
+        });
 
-				if(this.onpayloadtype == null) {
-					this.onpayloadtype = "str";
-				}
-				$("#node-input-onPayloadType").val(this.onPayloadType);
+        if(this.onpayloadtype == null) {
+          this.onpayloadtype = "str";
+        }
+        $("#node-input-onPayloadType").val(this.onPayloadType);
 
-				$("#node-input-onPayload").typedInput({
-					default: 'str',
-					typeField: $("#node-input-onPayloadType"),
-					types:['str','num','bool','json']
-				});
+        $("#node-input-onPayload").typedInput({
+          default: 'str',
+          typeField: $("#node-input-onPayloadType"),
+          types:['str','num','bool','json']
+        });
 
-				if(this.offPayloadType == null) {
-					this.offPayloadType = "str";
-				}
-				$("#node-input-offPayloadType").val(this.offPayloadType);
+        if(this.offPayloadType == null) {
+          this.offPayloadType = "str";
+        }
+        $("#node-input-offPayloadType").val(this.offPayloadType);
 
-				$("#node-input-offPayload").typedInput({
-					default: 'str',
-					typeField: $("#node-input-offPayloadType"),
-					types:['str','num','bool','json']
-				});
-
-
+        $("#node-input-offPayload").typedInput({
+          default: 'str',
+          typeField: $("#node-input-offPayloadType"),
+          types:['str','num','bool','json']
+        });
 			}
 
 			$.getScript('light-scheduler/js/date.js')
 			.done(function(data, textStatus, jqxhr) {
 			  $.getScript('light-scheduler/js/jquery.weekcalendar.js')
 			  .done(function(data, textStatus, jqxhr){
-				setup(node);
+          setup(node);
 			  })
 			  .fail(function(jqxhr, settings, exception ){
-				console.log("failed to load jquery.weekcalendar.js");
-				console.log(exception);
-				console.log(exception.stack);
+				  console.log("failed to load jquery.weekcalendar.js");
+				  console.log(exception);
+				  console.log(exception.stack);
 			  });
-			})
-			.fail(function(jqxhr, settings, exception ) {
-			  console.log("failed to load moment.js");
-			  console.log(exception);
-			  console.log(exception.stack);
 			});
-
 		},
 		oneditsave: function() {
 			var n = this;
@@ -164,7 +167,6 @@
 			delete window.calendar;
 		},
 		oneditresize: function() {
-
 		}
 	});
 </script>
