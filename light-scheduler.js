@@ -80,26 +80,34 @@ module.exports = function(RED) {
         return setState(false);
 
       var duringEvent = false;
+
+      var now = new Date();
       node.events.map((event) => {
-        var now = new Date();
 
-        var evtStart = new Date();
-        evtStart.setTime(Date.parse(event.start));
-        var evtEnd =  new Date();
-        evtEnd.setTime(Date.parse(event.end));
+        function adjust(d) {
+          console.log(d);
+          d = new Date(Date.parse(d));
+          console.log(d);
+         
+          var targetDOW = d.getDate(); // Monday == 1 (Since all dates stored are starting 2018-01-01)
+          var h = d.getUTCHours();
+          var m = d.getUTCMinutes();
 
-        if(evtStart.getDay() == now.getDay()) {
-          evtStart.setFullYear(now.getFullYear(),now.getMonth(), now.getDate());
-          evtEnd.setFullYear(now.getFullYear(),now.getMonth(), now.getDate());
+          var year = now.getFullYear();
+          var month = now.getMonth();
+          var dow = now.getDay();    
+          var dayDiff = dow-targetDOW;
+          var date = now.getUTCDate()+dayDiff;
+          return new Date(year, month, date, h, m, 0, 0);
+        };
 
-          //console.log("Now: ", now);
-          //console.log("Start: ",evtStart);
-          //console.log("End: ",evtEnd);
-          if(now >= evtStart && now <= evtEnd) {
-            duringEvent = true; // Set onEvent flag if we currently match a event.
-            //console.log("MATCHED EVENT");
-          }
+        var evtStart = adjust(event.start);
+        var evtEnd = adjust(event.end);
+
+        if(now >= evtStart && now <= evtEnd) {
+          duringEvent = true; // Set onEvent flag if we currently match a event.
         }
+
       });
 
       if(node.override == 'schedule-only')

@@ -8,13 +8,13 @@
     <input type="text" id="node-input-settings"></input>
   </div>
   <div class="form-row">
-    <link rel='stylesheet' href='light-scheduler/js/jquery.weekcalendar.css' />
+    <link rel='stylesheet' href='light-scheduler/js/fullcalendar.min.css' />
     <style type="text/css">
       .wc-business-hours {
         font-size: 1.0em;
       }
     </style>
-    <div id="calendar" style="width: 100%; height: 500px; border: 1px solid grey"></div>
+    <div id="calendar" style="width: 100%; border: 1px solid grey"></div>
   </div>
   <div class="form-row">
     <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</label>
@@ -67,7 +67,7 @@
   RED.nodes.registerType('light-scheduler', {
     category: 'function',
     color:"#DEBD5C",
-    defaults: {
+    defaults: {      
       settings: {value: "", type: "light-scheduler-settings"},
       events: {value:"[]"},
       topic: {value:""},
@@ -87,40 +87,69 @@
     },
 		oneditprepare: function() {
       var node = this;
-      var setup = function(n) {
-        var events = JSON.parse(n.events);
-        var id = events.length;
 
-        $('#calendar').weekCalendar({
-          date: new Date('2018-01-01T00:00:00.000+00:00'),
-          minDate: new Date('2018-01-01T00:00:00.000+00:00'),
-          maxDate: new Date('2018-01-08T00:00:00.000+00:00'),
-          data: events,
-          timeslotHeight: 12,
-          timeslotsPerHour: 4,
-          defaultEventLength: 1,
-          use24Hour: true,
-          showHeader: false,
-          firstDayOfWeek: 1,
-          getHeaderDate: function(date, element){
-            var d=['Sun', 'Mon','Tue','Wed','Thu','Fri','Sat'];
-            return d[date.getDay()];
+      var setup = function(node) {
+        node.configuredEvents = JSON.parse(node.events);
+        //var id = configuredEvents.length;
+
+        $('#calendar').fullCalendar({
+          timezone: false,
+          defaultDate: moment('2018-01-01 00:00:00'),
+          header: false,
+          footer: false,
+          firstDay: 1,
+          allDaySlot: false,          
+          defaultView: 'agendaWeek',
+          timeFormat: 'H:mm',
+          slotLabelFormat: 'H:mm',
+          columnFormat: 'ddd',
+          duration: '00:15:00',
+          snapDuration: '00:15:00',
+          displayEventTime: false,          
+          selectOverlap: false,
+          selectable: true,
+          events: node.configuredEvents,
+          select: function(start, end) {
+            eventData = {
+              title: '',
+              start: start,
+              end: end,
+              stick: true
+            };            
+            $('#calendar').fullCalendar('renderEvent', eventData, true);				    
+				    $('#calendar').fullCalendar('unselect');    
+            node.configuredEvents.push(eventData);        
+			    },
+          selectAllow: function(selectInfo) {
+            return true; // TODO: Validate that start and end is the same day.
           },
-          height: function($calendar) {
-            return $('#calendar').parent().height();
+          eventClick: function(calEvent, jsEvent, view) {
+            $('#calendar').fullCalendar('removeEvents', calEvent._id);
+
+            // Redude the configureEvents to exclude the removed event.
+            node.configuredEvents = node.configuredEvents.filter(function(event) {
+              var eventStart = moment.utc(event.start);
+              if(eventStart.isSame(calEvent.start, 'minute'))
+                return false;
+              return true;
+            });
           },
-          newEventText: "",
-          eventBody: function(calEvent, calendar) {
-            return "";
+          eventResize: function(event, delta, revertFunc) {
+
+            node.configuredEvents.map(function(e) {
+              var eStart = moment.utc(e.start);
+              if(eStart.isSame(event.start, 'minute'))
+                e.end = moment.utc(e.end).add(delta);
+            });
+
           },
-          eventNew: function(calEvent, $event) {
-            calEvent.id = id++;
-            calEvent.title = "";
+          eventDrop: function(event, delta, revertFunc, jsEvent, ui, view ) {
+            revertFunc(); // D&D was buggy, so disabling for now.
           },
-          eventClick: function(calEvent, $event) {
-            $('#calendar').weekCalendar('removeEvent', calEvent.id);
-          }
+          
+			    editable: true,
         });
+        
 
         if(this.onpayloadtype == null) {
           this.onpayloadtype = "str";
@@ -145,26 +174,22 @@
         });
 			}
 
-			$.getScript('light-scheduler/js/date.js')
+			$.getScript('light-scheduler/js/moment.min.js')
 			.done(function(data, textStatus, jqxhr) {
-			  $.getScript('light-scheduler/js/jquery.weekcalendar.js')
+			  $.getScript('light-scheduler/js/fullcalendar.min.js')
 			  .done(function(data, textStatus, jqxhr){
           setup(node);
 			  })
 			  .fail(function(jqxhr, settings, exception ){
-				  console.log("failed to load jquery.weekcalendar.js");
+				  console.log("failed to load fullcalendar.min.js");
 				  console.log(exception);
 				  console.log(exception.stack);
 			  });
 			});
 		},
 		oneditsave: function() {
-			var n = this;
-			var events = $('#calendar').weekCalendar('serializeEvents');
-			for (var i=0; i<events.length; i++) {
-				events[i].id = i;
-			}
-			n.events = JSON.stringify(events);
+			var node = this;
+			node.events = JSON.stringify(node.configuredEvents);
 			delete window.calendar;
 		},
 		oneditresize: function() {
