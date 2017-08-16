@@ -2,8 +2,9 @@ module.exports = function(RED) {
   "use strict";
   var path = require('path');
   var req = require('request');
-  var util = require('util');
-  var SunCalc = require('suncalc');
+  var util = require('util');  
+  var scheduler = require('./lib/scheduler.js');
+  var isItDark = require('./lib/isitdark.js');
 
   var LightScheduler = function(n) {
 
@@ -19,6 +20,7 @@ module.exports = function(RED) {
     this.override = 'auto';
     this.prevPayload = null;
     var node = this;
+
 
     function setState(out) {
       var msg = {
@@ -40,38 +42,8 @@ module.exports = function(RED) {
       }
     }
 
-    function isItDark() {
-      if(!node.settings || !node.settings.latitude || !node.settings.longitude)
-      {
-        node.warn('Longitude and Latitude not configured properly, unable to take sun position into calculation!');
-        return true;
-      }
 
-      var ts_yesterday = new Date();
-      ts_yesterday.setDate(ts_yesterday.getDate()-1);
-      var ts_now = new Date();
-      var ts_tomorrow = new Date();
-      ts_tomorrow.setDate(ts_tomorrow.getDate()+1);
-      //console.log('Longitude: ', node.settings.longitude);
-      //console.log('Latitude: ', node.settings.latitude);
-
-      // Calculate sun times. 
-      var yesterday = SunCalc.getTimes(ts_yesterday, node.settings.latitude, node.settings.longitude);
-      var yesterday_down = yesterday.goldenHour;
-      var today = SunCalc.getTimes(ts_now, node.settings.latitude, node.settings.longitude);
-      var today_up = today.goldenHourEnd;
-      var today_down = today.goldenHour;
-      var tomorrow = SunCalc.getTimes(ts_tomorrow, node.settings.latitude, node.settings.longitude);
-      var tomorrow_up = tomorrow.goldenHourEnd;
-
-      var darkFrom = ts_now <= today_up ? yesterday_down : today_down;
-      var darkUntil = ts_now <= today_up ? today_up : tomorrow_up;
-
-      //node.log(util.format('Dark from %s to %s!', darkFrom, darkUntil));
-      return (ts_now > darkFrom && ts_now <= darkUntil);
-    }
-
-    function evaluateSchedule() {
+    function evaluate() {
       // Handle override state, if any.
       if(node.override == 'on')
         return setState(true);
@@ -79,52 +51,24 @@ module.exports = function(RED) {
       if(node.override == 'off')
         return setState(false);
 
-      var duringEvent = false;
-
-      var now = new Date();
-      node.events.map((event) => {
-
-        function adjust(d) {
-          console.log(d);
-          d = new Date(Date.parse(d));
-          console.log(d);
-         
-          var targetDOW = d.getDate(); // Monday == 1 (Since all dates stored are starting 2018-01-01)
-          var h = d.getUTCHours();
-          var m = d.getUTCMinutes();
-
-          var year = now.getFullYear();
-          var month = now.getMonth();
-          var dow = now.getDay();    
-          var dayDiff = dow-targetDOW;
-          var date = now.getUTCDate()+dayDiff;
-          return new Date(year, month, date, h, m, 0, 0);
-        };
-
-        var evtStart = adjust(event.start);
-        var evtEnd = adjust(event.end);
-
-        if(now >= evtStart && now <= evtEnd) {
-          duringEvent = true; // Set onEvent flag if we currently match a event.
-        }
-
-      });
+      var matchEvent = scheduler.matchSchedule(node.events);
 
       if(node.override == 'schedule-only')
-        return setState(duringEvent);
+        return setState(matchEvent);
 
       if(node.override == 'light-only')
-        return setState(isItDark());
+        return setState(isItDark(node));
 
       // node.override == auto
-      if(!duringEvent)
+      if(!matchEvent)
         return setState(false);
 
       if(node.onlyWhenDark)
-        return setState(isItDark());
+        return setState(isItDark(node));
 
       return setState(true);
     }
+
 
     node.on('input', function(msg) {
       if(msg.payload.match(/^(on|off|auto|schedule-only|light-only)$/i))
@@ -135,19 +79,20 @@ module.exports = function(RED) {
       else
         node.warn('Failed to interpret incomming msg.payload. Ignoring it!');
 
-      evaluateSchedule();
+      evaluate();
     });
 
     // re-evaluate every minute
-    node.evalInterval = setInterval(evaluateSchedule, 60000);
+    node.evalInterval = setInterval(evaluate, 60000);
 
     // Run initially directly after start / deploy.
-    setTimeout(evaluateSchedule, 1000);
+    setTimeout(evaluate, 1000);
 
     node.on('close', function() {
       clearInterval(node.evalInterval);
     });
 	};
+
 
   RED.nodes.registerType("light-scheduler", LightScheduler);
 
