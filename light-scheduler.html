@@ -88,9 +88,43 @@
 		oneditprepare: function() {
       var node = this;
 
+      node.fromMoment = function(m) {
+        m = moment(m);                
+        var dow = m.format('d');
+        var mod = m.hours()*60 + m.minutes();
+        var o = {dow: dow, mod: mod};
+        console.log('fromMoment: ', o)
+        return o;
+      }
+
+      node.toMoment = function(o) {
+        console.log('o: ', o);
+        var day = o.dow==0?7:o.dow;
+        console.log('day: ', day);
+        var m = moment('2018-01-0' + day + ' 00:00:00');
+        var hours = Math.floor(o.mod / 60);
+        var minutes = o.mod - (hours*60);
+        m.hours(hours);
+        m.minutes(minutes);
+        console.log('toMoment: ' + m.format());
+        return m;
+      }
+
       var setup = function(node) {
-        node.configuredEvents = JSON.parse(node.events);
+        node.configuredEvents= [];
+        JSON.parse(node.events).map(function(e) {
+          if(!(e.start != undefined && e.start.dow != undefined && e.start.mod != undefined))
+            return;
+          eventData = {
+            title: '',
+            start: node.toMoment(e.start),
+            end: node.toMoment(e.end),
+            stick: true
+          };       
+          node.configuredEvents.push(eventData);
+        });
         //var id = configuredEvents.length;
+        
 
         $('#calendar').fullCalendar({
           timezone: false,
@@ -189,7 +223,16 @@
 		},
 		oneditsave: function() {
 			var node = this;
-			node.events = JSON.stringify(node.configuredEvents);
+
+      // Transform and store data
+      var data = [];
+      node.configuredEvents.map(function(e) {
+        var start = node.fromMoment(e.start);
+        var end = node.fromMoment(e.end);
+        data.push({start: start, end: end});        
+      });
+      console.log(data);
+			node.events = JSON.stringify(data);
 			delete window.calendar;
 		},
 		oneditresize: function() {
