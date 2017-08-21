@@ -19,19 +19,20 @@ The override functionality could for example be used to force lights to turn on 
 
 
 #### Planned features / changes
-- [x] Override state based on input (on, off, auto etc).
+- [X] Override state based on input (on, off, auto etc).
+- [X] new better graphical schedule editor.
+- [ ] 100% Unit tests.
 - [ ] Date-based schedule exceptions (for holidays etc).
 - [ ] Lux-based control (instead of sun-position based).
 - [ ] meta-data output (JSON data with information about current state and next change).
-- [ ] new better graphical schedule editor.
 
-
-#### Known Issues
-* The schedule is evaluated incorrect if ending exacly at midninght.
-* The schedule editor is lagging when resizing an event.
-* There seem to be some incompatibility with the Safari browser.
 
 #### Changelog
+
+##### v0.0.5. (August 25, 2017)
+* New storage format for schedules. (Unfortunately means that old schedules are lost and must be added again).
+* New graphical schedule editor (should work better for all browsers).
+* Started to prepare for unit-tests.
 
 ##### v0.0.4. (August 13, 2017)
 * Added override functionality.
