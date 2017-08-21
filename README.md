@@ -1,21 +1,39 @@
 # Light Scheduler
 ## node-red-contrib-light-scheduler
 
-Light Scheduler is a node-red node that provides a weekly schedule, and is mainly focused on controlling light in home automation scenarios.
+Light Scheduler is a node-red node that provides a weekly schedule, and is mainly focused on controlling light in home automation scenarios but could be used to control anything in your node-red setup.
 
 #### Main features
-* Graphical week-based schedule editor.
-* Control light based on dusk/sunset dawn/sunrise (only turn on lights when it's dark).
-* Customizable on/off payloads (and topic).
-* Override functionality.
+
+##### Graphical Schedule Editor
+
+The graphical scheduler makes it quick and easy to define when you want your output to turn on / off.
+The schedule is on a weekly basis, so each week day can be individually defined.
+
+![Editor](https://raw.githubusercontent.com/niklaswall/node-red-contrib-light-scheduler/master/screenshots/editor.png "Editor")
+
+
+##### Dusk / Dawn overrides
+
+To save energy it's nice to be able to only have the lamps and other functions only turn on / off when it bright / dark outside.
+The Light Scheduler default is to calculate the sun's position for the given position (latitude / longitude) and make sure that the output is only triggered to on / off based on both the schedule and "it it's dark" outside.
+
 
 ##### Overrides
+
 The automatic state of the Light Scheduler can be overridden by injecting a string in msg.payload. 
 ![Overrides](https://github.com/niklaswall/node-red-contrib-light-scheduler/raw/master/screenshots/override.png "Overrides")
 
 msg.payload can be either 'on', 'off', 'schedule-only', 'light-only' or 'auto'. **Auto** will remove the override and make the light scheduler work as normal. **Schedule Only** will ignore the light level and control the output only according to the schedule. **Light Only** will ignore the schedule and only care about the light level.
 
 The override functionality could for example be used to force lights to turn on when there is motion/precense detected as long as it's dark.
+
+![Motion Override](https://raw.githubusercontent.com/niklaswall/node-red-contrib-light-scheduler/master/screenshots/motion_override.png "Motion Override")
+
+
+##### Customizable on/off payloads (and topic).
+
+Since this node don't forward any input msg to the output, the payloads for both the on state and the off state must be defined. It's also possible to define the topic (if needed).
 
 
 #### Planned features / changes
