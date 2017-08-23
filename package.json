@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-light-scheduler",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "Niklas Wall",
   "description": "Light Scheduler is a node-red node that provides a weekly schedule, and is mainly focused on controlling light in home automation scenarios.",
   "license": "Apache-2.0",
@@ -8,6 +8,9 @@
     "request": "^2.81.0",
     "suncalc": "^1.8.0",
     "util": "^0.10.3"
+  },
+  "scripts": {
+    "test": "jest"
   },
   "keywords": [
     "node-red",
@@ -17,7 +20,8 @@
     "dusk",
     "dawn",
     "sunset",
-    "sunrise"
+    "sunrise",
+    "timer"
   ],
   "bugs": {
     "url": "https://github.com/niklaswall/node-red-contrib-light-scheduler/issues"
@@ -31,5 +35,13 @@
       "light-scheduler": "light-scheduler.js",
       "light-scheduler-settings": "light-scheduler-settings.js"
     }
+  },
+  "devDependencies": {
+    "jest": "^20.0.4",
+    "timekeeper": "^1.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverage": true
   }
 }

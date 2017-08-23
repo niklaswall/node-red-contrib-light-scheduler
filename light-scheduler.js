@@ -51,7 +51,7 @@ module.exports = function(RED) {
       if(node.override == 'off')
         return setState(false);
 
-      var matchEvent = scheduler.matchSchedule(node.events);
+      var matchEvent = scheduler.matchSchedule(node);
 
       if(node.override == 'schedule-only')
         return setState(matchEvent);
