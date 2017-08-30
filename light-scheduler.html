@@ -42,6 +42,8 @@
       }
 
       var setup = function(node) {
+        $("#node-input-duskdawn").val(node.onlyWhenDark ? 'duskdawn.goldenhour' : 'duskdawn.none');
+
         node.configuredEvents= [];
         JSON.parse(node.events).map(function(e) {
           if(!(e.start != undefined && e.start.dow != undefined && e.start.mod != undefined))
@@ -162,8 +164,12 @@
         var end = node.fromMoment(e.end);
         data.push({start: start, end: end});        
       });
-      console.log(data);
-			node.events = JSON.stringify(data);
+
+      node.events = JSON.stringify(data);
+      
+      var duskdawn = $("#node-input-duskdawn").val();
+      node.onlyWhenDark = (duskdawn == 'duskdawn.goldenhour');
+
 			delete window.calendar;
 		},
 		oneditresize: function() {
@@ -203,8 +209,11 @@
     <input type="hidden" id="node-input-offPayloadType"></input>
   </div>
   <div class="form-row">
-    <label for="node-input-onlyWhenDark">Only when dark</label>
-    <input type="checkbox" id="node-input-onlyWhenDark"> 
+    <label for="node-input-duskdawn"><i class="fa fa-moon-o"></i> Dusk / Dawn</label>
+    <select id="node-input-duskdawn">
+      <option value="duskdawn.goldenhour">Only when dark</option>
+      <option value="duskdawn.none">Schedule only</option>
+    </select>
   </div>
 </script>
 <script type="text/x-red" data-help-name="light-scheduler">
