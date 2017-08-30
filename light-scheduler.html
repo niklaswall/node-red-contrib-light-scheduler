@@ -1,67 +1,3 @@
-<script type="text/x-red" data-template-name="light-scheduler">
-  <div class="form-row">
-    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-    <input type="text" id="node-input-name" placeholder="Name"></input>
-  </div>
-  <div class="form-row">
-    <label for="node-input-settings"><i class="fa fa-globe"></i> Globals</label>
-    <input type="text" id="node-input-settings"></input>
-  </div>
-  <div class="form-row">
-    <link rel='stylesheet' href='light-scheduler/js/fullcalendar.min.css' />
-    <style type="text/css">
-      .wc-business-hours {
-        font-size: 1.0em;
-      }
-    </style>
-    <div id="calendar" style="width: 100%; border: 1px solid grey"></div>
-  </div>
-  <div class="form-row">
-    <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</label>
-    <input type="text" id="node-input-topic" placeholder="Topic"></input>
-  </div>
-  <div class="form-row">
-    <label for="node-input-onPayload"><i class="fa fa-envelope"></i> On Payload</label>
-    <input type="text" id="node-input-onPayload" placeholder="ON"></input>
-    <input type="hidden" id="node-input-onPayloadType"></input>
-  </div>
-  <div class="form-row">
-    <label for="node-input-offPayload"><i class="fa fa-envelope"></i> Off Payload</label>
-    <input type="text" id="node-input-offPayload" placeholder="OFF"></input>
-    <input type="hidden" id="node-input-offPayloadType"></input>
-  </div>
-  <div class="form-row">
-    <label for="node-input-onlyWhenDark">Only when dark</label>
-    <input type="checkbox" id="node-input-onlyWhenDark"> 
-  </div>
-</script>
-
-<script type="text/x-red" data-help-name="light-scheduler">
-  <p>A node to control light based on a schedule and the sun position.</p>
-  <h3>Inputs</h3>
-  <dl class="message-properties">
-    <dt>payload <span class="property-type">string</span></dt>
-    <dd>
-      <p>The payload will be used to set the override-mode of the light scheduler.</p>
-      <p>Valid overrides:
-      <ol>
-        <li>auto - Removes the override and act according to configuration.</li>
-        <li>on - Forces output to ON state.</li>
-        <li>off - Forces output to OFF state.</li>
-        <li>light-only - Ignores the schedule and turns ON if it is considered dark.</li>
-        <li>schedule-only - Ignores the light level and turns ON according to schedule.</li>        
-      </ol>
-      <i>Please Note:</i> The override is runtime only and will revert to auto during deploy / restart.
-      </p>
-    </dd>
-  </dl>
-
-  <h3>Output</h3>
-  <dl class="message-properties">
-    <dt>payload</dt>
-    <dd>The payload will be set according to the settings and will output either the ON or OFF payload depending on the set parameters.</dd>
-  </dl>
-</script>
 <script type="text/javascript">
   RED.nodes.registerType('light-scheduler', {
     category: 'function',
@@ -92,20 +28,16 @@
         var dow = m.format('d');
         var mod = m.hours()*60 + m.minutes();
         var o = {dow: dow, mod: mod};
-        console.log('fromMoment: ', o)
         return o;
       }
 
       node.toMoment = function(o) {
-        console.log('o: ', o);
         var day = o.dow==0?7:o.dow;
-        console.log('day: ', day);
         var m = moment('2018-01-0' + day + ' 00:00:00');
         var hours = Math.floor(o.mod / 60);
         var minutes = o.mod - (hours*60);
         m.hours(hours);
         m.minutes(minutes);
-        console.log('toMoment: ' + m.format());
         return m;
       }
 
@@ -237,4 +169,67 @@
 		oneditresize: function() {
 		}
 	});
+</script>
+<script type="text/x-red" data-template-name="light-scheduler">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name"></input>
+  </div>
+  <div class="form-row">
+    <label for="node-input-settings"><i class="fa fa-globe"></i> Globals</label>
+    <input type="text" id="node-input-settings"></input>
+  </div>
+  <div class="form-row">
+    <link rel='stylesheet' href='light-scheduler/js/fullcalendar.min.css' />
+    <style type="text/css">
+      .wc-business-hours {
+        font-size: 1.0em;
+      }
+    </style>
+    <div id="calendar" style="width: 100%; border: 1px solid grey"></div>
+  </div>
+  <div class="form-row">
+    <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</label>
+    <input type="text" id="node-input-topic" placeholder="Topic"></input>
+  </div>
+  <div class="form-row">
+    <label for="node-input-onPayload"><i class="fa fa-envelope"></i> On Payload</label>
+    <input type="text" id="node-input-onPayload" placeholder="ON"></input>
+    <input type="hidden" id="node-input-onPayloadType"></input>
+  </div>
+  <div class="form-row">
+    <label for="node-input-offPayload"><i class="fa fa-envelope"></i> Off Payload</label>
+    <input type="text" id="node-input-offPayload" placeholder="OFF"></input>
+    <input type="hidden" id="node-input-offPayloadType"></input>
+  </div>
+  <div class="form-row">
+    <label for="node-input-onlyWhenDark">Only when dark</label>
+    <input type="checkbox" id="node-input-onlyWhenDark"> 
+  </div>
+</script>
+<script type="text/x-red" data-help-name="light-scheduler">
+  <p>A node to control light based on a schedule and the sun position.</p>
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">string</span></dt>
+    <dd>
+      <p>The <code>msg.payload</code> will be used to set the override-mode of the light scheduler.</p>
+      <p>Valid overrides:
+      <ol>
+        <li>auto - Removes the override and act according to configuration.</li>
+        <li>on - Forces output to ON state.</li>
+        <li>off - Forces output to OFF state.</li>
+        <li>light-only - Ignores the schedule and turns ON if it is considered dark.</li>
+        <li>schedule-only - Ignores the light level and turns ON according to schedule.</li>        
+      </ol>
+      <i>Please Note:</i> The override is runtime only and will revert to auto during deploy / restart.
+      </p>
+    </dd>
+  </dl>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+    <dt>payload</dt>
+    <dd>The payload will be set according to the settings and will output either the ON or OFF payload depending on the set parameters.</dd>
+  </dl>
 </script>
