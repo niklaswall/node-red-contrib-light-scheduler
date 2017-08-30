@@ -116,10 +116,10 @@
         });
         
 
-        if(this.onpayloadtype == null) {
-          this.onpayloadtype = "str";
+        if(node.onPayloadType == null) {
+          node.onPayloadType = "str";
         }
-        $("#node-input-onPayloadType").val(this.onPayloadType);
+        $("#node-input-onPayloadType").val(node.onPayloadType);
 
         $("#node-input-onPayload").typedInput({
           default: 'str',
@@ -127,10 +127,10 @@
           types:['str','num','bool','json']
         });
 
-        if(this.offPayloadType == null) {
-          this.offPayloadType = "str";
+        if(node.offPayloadType == null) {
+          node.offPayloadType = "str";
         }
-        $("#node-input-offPayloadType").val(this.offPayloadType);
+        $("#node-input-offPayloadType").val(node.offPayloadType);
 
         $("#node-input-offPayload").typedInput({
           default: 'str',
