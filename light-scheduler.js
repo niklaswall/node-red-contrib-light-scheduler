@@ -31,7 +31,7 @@ module.exports = function(RED) {
       else
         msg.payload = RED.util.evaluateNodeProperty(node.offPayload, node.offPayloadType, node, msg);
 
-      var overrideTxt = node.override == 'auto'?'':' (Override: ' + node.override + ')';
+      var overrideTxt = node.override == 'auto'?'':' - Override: ' + node.override;
       node.status({fill: out?"green":"red", shape: "dot", text: (out ? 'ON' : 'OFF') + overrideTxt});
 
       // Only send anything if the state have changed.
@@ -43,8 +43,13 @@ module.exports = function(RED) {
     }
 
 
-    function evaluate() {
+    function evaluate() {      
       // Handle override state, if any.
+      if(node.override == 'stop') {
+        node.status({fill: "gray", shape: "dot", text: 'Override: Stopped!'});        
+        return;
+      }
+
       if(node.override == 'on')
         return setState(true);
 
@@ -71,9 +76,12 @@ module.exports = function(RED) {
 
 
     node.on('input', function(msg) {
-      if(msg.payload.match(/^(on|off|auto|schedule-only|light-only)$/i))
+      msg.payload = msg.payload.toString(); // Make sure we have a string.
+      if(msg.payload.match(/^(1|on|0|off|auto|stop|schedule-only|light-only)$/i))
       {
-        node.override = msg.payload.toLowerCase();;
+        if(msg.payload == '0') msg.payload = 'off';
+        if(msg.payload == '1') msg.payload = 'on';
+        node.override = msg.payload.toLowerCase();
         //console.log("Override: " + node.override);
       }
       else
