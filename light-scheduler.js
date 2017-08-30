@@ -32,7 +32,7 @@ module.exports = function(RED) {
         msg.payload = RED.util.evaluateNodeProperty(node.offPayload, node.offPayloadType, node, msg);
 
       var overrideTxt = node.override == 'auto'?'':' (Override: ' + node.override + ')';
-      node.status({fill: out?"green":"red", shape: "dot", text: msg.payload + overrideTxt});
+      node.status({fill: out?"green":"red", shape: "dot", text: (out ? 'ON' : 'OFF') + overrideTxt});
 
       // Only send anything if the state have changed.
       if(msg.payload !== node.prevPayload)
