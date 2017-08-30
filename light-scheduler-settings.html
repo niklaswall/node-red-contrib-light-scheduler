@@ -3,15 +3,49 @@
     category: 'config',
     defaults: {
       name: {value: 'my settings', required:true},
-      latitude: {value: 63.253406, required:true, validate:RED.validators.number()},
-      longitude: {value: 18.722509, required:true, validate:RED.validators.number()},
+      latitude: {value: 0, required:true, validate:RED.validators.number()},
+      longitude: {value: 0, required:true, validate:RED.validators.number()},
     },
     label: function() {
       return this.name;
+    },
+    oneditprepare: function() {
+      var node = this;
+      if ("geolocation" in navigator) {
+        /* geolocation is available */
+        function geo_success(position) {
+          if($("#node-config-input-latitude").val() == 0)
+            $("#node-config-input-latitude").val(position.coords.latitude);
+          if($("#node-config-input-longitude").val() == 0)
+            $("#node-config-input-longitude").val(position.coords.longitude);
+          //alert("Latitude and Longitude updated according to your browser position!");
+        }
+        
+        function geo_error() {
+          //alert("Sorry, no position available. You need to configure it manually.");
+        }
+        
+        var geo_options = {
+          enableHighAccuracy: true, 
+          maximumAge        : 30000, 
+          timeout           : 27000
+        };
+        
+        node.wpid = navigator.geolocation.watchPosition(geo_success, geo_error, geo_options);
+      }
+    },
+    oneditsave: function() {
+      var node = this;
+      if(node.wpid)
+        navigator.geolocation.clearWatch(node.wpid);      
+    },
+    oneditcancel: function() {
+      var node = this;
+      if(node.wpid)
+        navigator.geolocation.clearWatch(node.wpid);      
     }
   });
 </script>
-
 <script type="text/x-red" data-template-name="light-scheduler-settings">
   <div class="form-row">
     <label for="node-config-input-name"><i class="icon-bookmark"></i> Name</label>
@@ -25,5 +59,12 @@
   <div class="form-row">
     <label for="node-config-input-longitude"><i class="icon-globe"></i> Longitude</label>
     <input type="text" id="node-config-input-longitude">
-  </div>
+  </div>  
+</script>
+<script type="text/x-red" data-help-name="light-scheduler-settings">
+  <h3>Settings</h3>
+  <dl class="message-properties">
+    <dt>Latitude & Longitude<span class="property-type">number</span></dt>
+    <dd>If the browser support geolocation the Latitude and Longitude will be updated to the current position when created. This position might not be accurate, so please verify that it is as good as you want it.</dd>
+  </dl>
 </script>
