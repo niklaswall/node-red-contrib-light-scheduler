@@ -4,7 +4,7 @@ node-red-contrib-light-scheduler
 
 Light Scheduler is a node-red node that provides a weekly schedule, and is mainly focused on controlling light in home automation scenarios but could be used to control anything in your node-red setup.
 
-*PLEASE NOTE:* This node is still in "heavy" development and might not behave as you would expect... if not please don't hesitate to register an issue at [github](https://github.com/niklaswall/node-red-contrib-light-scheduler/issues)!
+*PLEASE NOTE:* This node is still in "heavy" development and might not behave as you would expect (but should). Please don't hesitate to register an issue at [github](https://github.com/niklaswall/node-red-contrib-light-scheduler/issues) for potential fault (and improvements suggestions)!
 
 ## Main features
 
@@ -40,15 +40,19 @@ Since this node don't forward any input msg to the output, the payloads for both
 
 
 ## Planned features / changes
-- [X] Override state based on input (on, off, auto etc).
-- [X] new better graphical schedule editor.
-- [ ] 100% Unit tests.
 - [ ] Date-based schedule exceptions (for holidays etc).
 - [ ] Lux-based control (instead of sun-position based).
 - [ ] meta-data output (JSON data with information about current state and next change).
+- [ ] Use web-browser support to get geolocation when configuring the position.
 
 
 ## Changelog
+
+### v0.0.8 (August 30, 2017)
+* Improved unit tests.
+* Fixed fault that caused event that ended Saturnday at midningt (Sunday 00:00) to be faulty interpreted.
+* Changed Node status message to not show payload.
+* Global configuration node now gets the latitude and longitude from the browser (if awailable).
 
 ### v0.0.7 (August 22, 2017)
 * Jest Unit tests.
