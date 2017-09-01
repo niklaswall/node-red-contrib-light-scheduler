@@ -11,7 +11,8 @@
       onPayloadType: {value:"str"},
       offPayload: {value:"OFF", validate: RED.validators.typedInput("offPayloadType")},
       offPayloadType: {value:"str"},
-      onlyWhenDark: {value: true}
+      onlyWhenDark: {value: true},
+      outputfreq: {value: "output.statechange.startup"}
 		},
     inputs: 1,
     outputs: 1,
@@ -43,6 +44,7 @@
 
       var setup = function(node) {
         $("#node-input-duskdawn").val(node.onlyWhenDark ? 'duskdawn.goldenhour' : 'duskdawn.none');
+        $("#node-input-outputfreq").val(node.outputfreq ? node.outputfreq : 'output.statechange.startup');
 
         node.configuredEvents= [];
         JSON.parse(node.events).map(function(e) {
@@ -170,6 +172,8 @@
       var duskdawn = $("#node-input-duskdawn").val();
       node.onlyWhenDark = (duskdawn == 'duskdawn.goldenhour');
 
+
+
 			delete window.calendar;
 		},
 		oneditresize: function() {
@@ -194,26 +198,45 @@
     </style>
     <div id="calendar" style="width: 100%; border: 1px solid grey"></div>
   </div>
-  <div class="form-row">
-    <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</label>
-    <input type="text" id="node-input-topic" placeholder="Topic"></input>
+
+
+  <div style="padding-top: 15px">
+    <h5>Output</h5> 
+    
+    <div class="form-row">    
+      <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</label>
+      <input type="text" id="node-input-topic" placeholder="Topic"></input>
+    </div>
+    <div class="form-row">
+      <label for="node-input-onPayload"><i class="fa fa-envelope"></i> On Payload</label>
+      <input type="text" id="node-input-onPayload" placeholder="ON"></input>
+      <input type="hidden" id="node-input-onPayloadType"></input>
+    </div>
+    <div class="form-row">
+      <label for="node-input-offPayload"><i class="fa fa-envelope"></i> Off Payload</label>
+      <input type="text" id="node-input-offPayload" placeholder="OFF"></input>
+      <input type="hidden" id="node-input-offPayloadType"></input>
+    </div>
+    <div class="form-row">
+      <label for="node-input-outputfreq"><i class="fa fa-play"></i> Output </label>
+      <select id="node-input-outputfreq">
+        <option value="output.statechange">when state changes</option>
+        <option value="output.statechange.startup">when state changes + startup</option>
+        <option value="output.minutely">minutely</option>
+      </select>
+    </div>
   </div>
-  <div class="form-row">
-    <label for="node-input-onPayload"><i class="fa fa-envelope"></i> On Payload</label>
-    <input type="text" id="node-input-onPayload" placeholder="ON"></input>
-    <input type="hidden" id="node-input-onPayloadType"></input>
-  </div>
-  <div class="form-row">
-    <label for="node-input-offPayload"><i class="fa fa-envelope"></i> Off Payload</label>
-    <input type="text" id="node-input-offPayload" placeholder="OFF"></input>
-    <input type="hidden" id="node-input-offPayloadType"></input>
-  </div>
-  <div class="form-row">
-    <label for="node-input-duskdawn"><i class="fa fa-moon-o"></i> Dusk / Dawn</label>
-    <select id="node-input-duskdawn">
-      <option value="duskdawn.goldenhour">Only when dark</option>
-      <option value="duskdawn.none">Schedule only</option>
-    </select>
+  
+  <div style="padding-top: 15px">
+    <h5>Dusk / Dawn</h5>
+
+    <div class="form-row">
+      <label for="node-input-duskdawn"><i class="fa fa-moon-o"></i> Dusk / Dawn</label>
+      <select id="node-input-duskdawn">
+        <option value="duskdawn.goldenhour">Only when dark</option>
+        <option value="duskdawn.none">Schedule only</option>
+      </select>
+    </div>
   </div>
 </script>
 <script type="text/x-red" data-help-name="light-scheduler">
@@ -224,14 +247,14 @@
     <dd>
       <p>The <code>msg.payload</code> will be used to set the override-mode of the light scheduler.</p>
       <p>Valid overrides:
-      <ol>
+      <ul>
         <li>auto - Removes the override and act according to configuration.</li>
         <li>stop - Postpone all output.</li>
         <li>on / 1 - Forces output to ON state.</li>
         <li>off / 0 - Forces output to OFF state.</li>
         <li>light-only - Ignores the schedule and turns ON if it is considered dark.</li>
         <li>schedule-only - Ignores the light level and turns ON according to schedule.</li>        
-      </ol>
+      </ul>
       <i>Please Note:</i> The override is runtime only and will revert to auto during deploy / restart.
       </p>
     </dd>
@@ -242,4 +265,14 @@
     <dt>payload</dt>
     <dd>The payload will be set according to the settings and will output either the ON or OFF payload depending on the set parameters.</dd>
   </dl>
+
+  The output setting can be either of:
+  <ul>
+    <li>"when state changes" - Will only output a <code>msg</code> when the state changes. The state is evaluated on a minutely basis, so it can take up to a minute after deploy of a new configu before the output it triggered.</li>
+    <li>"when state changes + startup" - Will only output a <code>msg</code> when the state changes and directly after a deploy and a restart of node-red.</li>
+    <li>"minutely" -  - Will only output a <code>msg</code> on a minutely basis even if the state have not changed.</li>
+  </ul>
+
+
+
 </script>

@@ -17,6 +17,7 @@ module.exports = function(RED) {
     this.offPayload = n.offPayload;
     this.offPayloadType = n.offPayloadType;
     this.onlyWhenDark = n.onlyWhenDark;
+    this.outputfreq = n.outputfreq ? n.outputfreq : 'output.statechange.startup';
     this.override = 'auto';
     this.prevPayload = null;
     var node = this;
@@ -35,7 +36,7 @@ module.exports = function(RED) {
       node.status({fill: out?"green":"red", shape: "dot", text: (out ? 'ON' : 'OFF') + overrideTxt});
 
       // Only send anything if the state have changed.
-      if(msg.payload !== node.prevPayload)
+      if(node.outputfreq == 'output.minutely' || msg.payload !== node.prevPayload)
       {
         node.send(msg);
         node.prevPayload = msg.payload;
@@ -94,7 +95,8 @@ module.exports = function(RED) {
     node.evalInterval = setInterval(evaluate, 60000);
 
     // Run initially directly after start / deploy.
-    setTimeout(evaluate, 1000);
+    if(node.outputfreq != 'output.statechange')
+      setTimeout(evaluate, 1000);
 
     node.on('close', function() {
       clearInterval(node.evalInterval);
