@@ -270,9 +270,15 @@
   <ul>
     <li>"when state changes" - Will only output a <code>msg</code> when the state changes. The state is evaluated on a minutely basis, so it can take up to a minute after deploy of a new configu before the output it triggered.</li>
     <li>"when state changes + startup" - Will only output a <code>msg</code> when the state changes and directly after a deploy and a restart of node-red.</li>
-    <li>"minutely" -  - Will only output a <code>msg</code> on a minutely basis even if the state have not changed.</li>
+    <li>"minutely" - Will only output a <code>msg</code> on a minutely basis even if the state have not changed.</li>
   </ul>
 
+  <h3>Dusk / Dawn</h3>
+  The Dusk / Dawn setting can be either of:
+  <ul>
+      <li>"Only when dark" - Require it "to be dark" and that the schedule allows it, to go "ON".</li>
+      <li>"Schedule only" - Only control the output based on the schedule.</li>
+  </ul>
 
 
 </script>
