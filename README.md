@@ -38,15 +38,26 @@ The override functionality could for example be used to force lights to turn on 
 
 Since this node don't forward any input msg to the output, the payloads for both the on state and the off state must be defined. It's also possible to define the topic (if needed).
 
+### Controlled output
+
+The Light Scheduler have three modes that control how and when a message will be sent:
+* "**when state changes**" - Will only output a message when the state changes. The state is evaluated on a minutely basis, so it can take up to a minute after deploy of a new configu before the output it triggered.
+* "**when state changes + startup**" - Will only output a message when the state changes and directly after a deploy and a restart of node-red.
+* "**minutely**" - Will only output a msg on a minutely basis even if the state have not changed.
+
 
 ## Planned features / changes
 - [ ] Date-based schedule exceptions (for holidays etc).
 - [ ] Lux-based control (instead of sun-position based).
 - [ ] meta-data output (JSON data with information about current state and next change).
-- [ ] Use web-browser support to get geolocation when configuring the position.
 
 
 ## Changelog
+
+### v0.0.9 (September 1, 2017)
+* Fixed payload type fault. The type did not get saved correctly.
+* Changed dusk / dawn edit control to be more clear.
+* Added setting that controls when the node send out a message.
 
 ### v0.0.8 (August 30, 2017)
 * Improved unit tests.
