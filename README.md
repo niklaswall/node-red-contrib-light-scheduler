@@ -54,6 +54,9 @@ The Light Scheduler have three modes that control how and when a message will be
 
 ## Changelog
 
+### v0.0.10 (December 5, 2017)
+* Improved code that calculates "if it is dark" based on sun position.
+
 ### v0.0.9 (September 1, 2017)
 * Fixed payload type fault. The type did not get saved correctly.
 * Changed dusk / dawn edit control to be more clear.
