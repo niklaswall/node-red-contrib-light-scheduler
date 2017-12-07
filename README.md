@@ -58,6 +58,7 @@ The Light Scheduler have three modes that control how and when a message will be
 * Added a sun elevation threshold to the dusk/dawn section. It's now possible to adjust how early / late the sun position should affect the output. Sun elevation over the horizon is used instead of a time-offset, this will cater for a more consistant result over the year as the sun trajectory changes over time. (Fixes issue #3)
 * Added drag-and drop. Thank you @erikalveflo!
 * Fixed problem with schedules ending at sunday midnight (Issue #6). Thank you @erikalveflo!
+* Added setting for showing the Sun elevation in the Node Status.
 
 ### v0.0.10 (December 5, 2017)
 * Improved code that calculates "if it is dark" based on sun position.

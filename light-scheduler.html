@@ -13,6 +13,7 @@
       offPayloadType: {value:"str"},
       onlyWhenDark: {value: true},
       sunElevationThreshold: {value: 6, required: true, validate: RED.validators.number()},
+      sunShowElevationInStatus: {value: false},
       outputfreq: {value: "output.statechange.startup"}
     },
     inputs: 1,
@@ -263,8 +264,7 @@
       <select id="node-input-duskdawn">
         <option value="duskdawn.goldenhour">Only when dark</option>
         <option value="duskdawn.none">Schedule only</option>
-      </select>
-      
+      </select>      
     </div>
     <div class="form-row">      
       <label for="node-input-sunElevationThreshold"><i class="fa fa-sun-o"></i> Threshold </label>
@@ -299,7 +299,11 @@
         <option value="-17">-17&deg;</option>
         <option value="-18">-18&deg; - Astronomical dawn / Nigh</option>
       </select>
-      
+      <div class="form-row">
+          <label>&nbsp;</label>
+          <input type="checkbox" id="node-input-sunShowElevationInStatus" style="display: inline-block; width: auto; vertical-align: top;">
+          <label for="node-input-sunShowElevationInStatus" style="width: 70%;">Show sun elevation in status.</label>
+      </div>
     </div>
     
   </div>

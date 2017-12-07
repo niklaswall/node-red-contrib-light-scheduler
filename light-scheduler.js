@@ -18,6 +18,7 @@ module.exports = function(RED) {
     this.offPayloadType = n.offPayloadType;
     this.onlyWhenDark = n.onlyWhenDark;
     this.sunElevationThreshold = n.sunElevationThreshold ? n.sunElevationThreshold : 6;
+    this.sunShowElevationInStatus = n.sunShowElevationInStatus | false;
     this.outputfreq = n.outputfreq ? n.outputfreq : 'output.statechange.startup';
     this.override = 'auto';
     this.prevPayload = null;
@@ -33,8 +34,13 @@ module.exports = function(RED) {
       else
         msg.payload = RED.util.evaluateNodeProperty(node.offPayload, node.offPayloadType, node, msg);
 
-      var overrideTxt = node.override == 'auto'?'':' - Override: ' + node.override;
-      node.status({fill: out?"green":"red", shape: "dot", text: (out ? 'ON' : 'OFF') + overrideTxt});
+      var sunElevation = '';
+      if(node.sunShowElevationInStatus) {
+        sunElevation = '  Sun: ' + isItDark.getElevation(node).toFixed(1) + '°';
+      }
+
+      var overrideTxt = node.override == 'auto'?'':'  Override: ' + node.override;
+      node.status({fill: out?"green":"red", shape: "dot", text: (out ? 'ON' : 'OFF') + sunElevation + overrideTxt});
 
       // Only send anything if the state have changed.
       if(node.outputfreq == 'output.minutely' || msg.payload !== node.prevPayload)
@@ -64,14 +70,14 @@ module.exports = function(RED) {
         return setState(matchEvent);
 
       if(node.override == 'light-only')
-        return setState(isItDark(node));
+        return setState(isItDark.isItDark(node));
 
       // node.override == auto
       if(!matchEvent)
         return setState(false);
 
       if(node.onlyWhenDark)
-        return setState(isItDark(node));
+        return setState(isItDark.isItDark(node));
 
       return setState(true);
     }
