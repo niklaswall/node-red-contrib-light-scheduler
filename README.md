@@ -19,7 +19,7 @@ The schedule is on a weekly basis, so each week day can be individually defined.
 ### Dusk / Dawn overrides
 
 To save energy it's nice to be able to only have the lamps and other functions only turn on / off when it bright / dark outside.
-The Light Scheduler default is to calculate the sun's position for the given position (latitude / longitude) and make sure that the output is only triggered to on / off based on both the schedule and "it it's dark" outside.
+The Light Scheduler default is to calculate the sun's position for the given position (latitude / longitude) and make sure that the output is only triggered to on / off based on both the schedule and "it it's dark" outside. The sune elevation threshold can be used to control how early / late this setting will have effect.
 
 
 ### Overrides
@@ -53,6 +53,9 @@ The Light Scheduler have three modes that control how and when a message will be
 
 
 ## Changelog
+
+### v0.0.11 (TBD)
+* Added a sun elevation threshold to the dusk/dawn section. It's now possible to adjust how early / late the sun position should affect the output. Sun elevation over the horizon is used instead of a time-offset, this will cater for a more consistant result over the year as the sun trajectory changes over time.
 
 ### v0.0.10 (December 5, 2017)
 * Improved code that calculates "if it is dark" based on sun position.
