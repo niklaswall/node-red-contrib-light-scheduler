@@ -28,27 +28,32 @@
 
       node.fromMoment = function(m) {
         m = moment(m);
-        var dow = m.format('d');
-        var mod = m.hours()*60 + m.minutes();
-        var o = {dow: dow, mod: mod};
-        return o;
-      }
+        return {
+          dow: m.day(),
+          mod: m.hours() * 60 + m.minutes(),
+        };
+      };
 
       node.toMoment = function(o) {
-        var day = o.dow==0?7:o.dow;
+        var day = o.dow == 0 ? 7 : o.dow;
         var m = moment('2018-01-0' + day + ' 00:00:00');
-        var hours = Math.floor(o.mod / 60);
-        var minutes = o.mod - (hours*60);
-        m.hours(hours);
-        m.minutes(minutes);
+        m.hours(Math.floor(o.mod / 60));
+        m.minutes(o.mod % 60);
         return m;
-      }
+      };
+
+      node.nextId = (function() {
+        var id = 0;
+        return function() {
+          return id++;
+        };
+      })();
 
       var setup = function(node) {
         $("#node-input-duskdawn").val(node.onlyWhenDark ? 'duskdawn.goldenhour' : 'duskdawn.none');
         $("#node-input-outputfreq").val(node.outputfreq ? node.outputfreq : 'output.statechange.startup');
 
-        node.configuredEvents= [];
+        node.configuredEvents = [];
         JSON.parse(node.events).forEach(function(e) {
           if(!(e.start != undefined && e.start.dow != undefined && e.start.mod != undefined))
             return;
@@ -56,10 +61,11 @@
             return;
 
           eventData = {
+            id: node.nextId(),
             title: '',
             start: node.toMoment(e.start),
             end: node.toMoment(e.end),
-            stick: true
+            stick: true,
           };
 
           if(eventData.start.isAfter(eventData.end)) {
@@ -69,8 +75,6 @@
 
           node.configuredEvents.push(eventData);
         });
-        //var id = configuredEvents.length;
-
 
         $('#calendar').fullCalendar({
           timezone: false,
@@ -87,49 +91,61 @@
           snapDuration: '00:15:00',
           displayEventTime: false,
           selectOverlap: false,
+          eventOverlap: false,
           selectable: true,
+          editable: true,
           events: node.configuredEvents,
           select: function(start, end) {
-            eventData = {
+            // Remove timezone
+            start = node.toMoment(node.fromMoment(start));
+            end = node.toMoment(node.fromMoment(end));
+
+            var eventData = {
+              id: node.nextId(),
               title: '',
               start: start,
               end: end,
-              stick: true
+              stick: true,
             };
+
             $('#calendar').fullCalendar('renderEvent', eventData, true);
             $('#calendar').fullCalendar('unselect');
+
             node.configuredEvents.push(eventData);
           },
           selectAllow: function(selectInfo) {
-            return true; // TODO: Validate that start and end is the same day.
-          },
-          eventClick: function(calEvent, jsEvent, view) {
-            $('#calendar').fullCalendar('removeEvents', calEvent._id);
-
-            // Redude the configureEvents to exclude the removed event.
-            node.configuredEvents = node.configuredEvents.filter(function(event) {
-              var eventStart = moment.utc(event.start);
-              if(eventStart.isSame(calEvent.start, 'minute'))
-                return false;
+            var start = moment(selectInfo.start);
+            var end = moment(selectInfo.end);
+            if(start.isSame(end, 'day')) {
               return true;
+            }
+            if(start.add(1, 'day').startOf('day').isSame(end, 'minute')) {
+              return true; // Next day but midnight
+            }
+            return false;
+          },
+          eventClick: function(event, jsEvent, view) {
+            $('#calendar').fullCalendar('removeEvents', event._id);
+            node.configuredEvents = node.configuredEvents.filter(function(e) {
+              return event._id != e.id;
             });
           },
           eventResize: function(event, delta, revertFunc) {
-
-            node.configuredEvents.map(function(e) {
-              var eStart = moment.utc(e.start);
-              if(eStart.isSame(event.start, 'minute'))
-                e.end = moment.utc(e.end).add(delta);
+            node.configuredEvents.forEach(function(e) {
+              if(event._id == e.id) {
+                e.end = moment(e.end).add(delta);
+              }
             });
-
           },
-          eventDrop: function(event, delta, revertFunc, jsEvent, ui, view ) {
-            revertFunc(); // D&D was buggy, so disabling for now.
+          eventDrop: function(event, delta, revertFunc, jsEvent, ui, view) {
+            node.configuredEvents.forEach(function(e) {
+              if(event._id == e.id) {
+                e.start = moment(e.start).add(delta);
+                e.end = moment(e.end).add(delta);
+              }
+            });
           },
-
-          editable: true,
         });
-
 
         if(node.onPayloadType == null) {
           node.onPayloadType = "str";
@@ -171,19 +187,16 @@
       var node = this;
 
       // Transform and store data
-      var data = [];
-      node.configuredEvents.map(function(e) {
-        var start = node.fromMoment(e.start);
-        var end = node.fromMoment(e.end);
-        data.push({start: start, end: end});
+      var events = node.configuredEvents.map(function(e) {
+        return {
+          start: node.fromMoment(e.start),
+          end: node.fromMoment(e.end),
+        };
       });
-
-      node.events = JSON.stringify(data);
+      node.events = JSON.stringify(events);
 
       var duskdawn = $("#node-input-duskdawn").val();
       node.onlyWhenDark = (duskdawn == 'duskdawn.goldenhour');
-
-
 
       delete window.calendar;
     },
