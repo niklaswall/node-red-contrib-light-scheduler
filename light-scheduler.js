@@ -17,6 +17,7 @@ module.exports = function(RED) {
     this.offPayload = n.offPayload;
     this.offPayloadType = n.offPayloadType;
     this.onlyWhenDark = n.onlyWhenDark;
+    this.sunElevationThreshold = n.sunElevationThreshold ? n.sunElevationThreshold : 6;
     this.outputfreq = n.outputfreq ? n.outputfreq : 'output.statechange.startup';
     this.override = 'auto';
     this.prevPayload = null;

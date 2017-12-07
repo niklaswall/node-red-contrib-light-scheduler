@@ -12,6 +12,7 @@
       offPayload: {value:"OFF", validate: RED.validators.typedInput("offPayloadType")},
       offPayloadType: {value:"str"},
       onlyWhenDark: {value: true},
+      sunElevationThreshold: {value: 6, required: true, validate: RED.validators.number()},
       outputfreq: {value: "output.statechange.startup"}
 		},
     inputs: 1,
@@ -241,7 +242,44 @@
         <option value="duskdawn.goldenhour">Only when dark</option>
         <option value="duskdawn.none">Schedule only</option>
       </select>
+      
     </div>
+    <div class="form-row">      
+      <label for="node-input-sunElevationThreshold"><i class="fa fa-sun-o"></i> Threshold </label>
+      <select id="node-input-sunElevationThreshold">
+        <option value="10">+10&deg;</option>
+        <option value="9">+9&deg;</option>
+        <option value="8">+8&deg;</option>
+        <option value="7">+7&deg;</option>
+        <option value="6">+6&deg; - Golden Hour</option>
+        <option value="5">+5&deg;</option>
+        <option value="4">+4&deg;</option>
+        <option value="3">+3&deg;</option>
+        <option value="2">+2&deg;</option>
+        <option value="1">+1&deg;</option>
+        <option value="0">+0&deg; - Sunset / Sunrise</option>
+        <option value="-1">-1&deg;</option>
+        <option value="-2">-2&deg;</option>
+        <option value="-3">-3&deg;</option>
+        <option value="-4">-4&deg;</option>
+        <option value="-5">-5&deg;</option>
+        <option value="-6">-6&deg; - Civil dawn</option>
+        <option value="-7">-7&deg;</option>
+        <option value="-8">-8&deg;</option>
+        <option value="-9">-9&deg;</option>
+        <option value="-10">-10&deg;</option>
+        <option value="-11">-11&deg;</option>
+        <option value="-12">-12&deg; - Nautical dawn</option>
+        <option value="-13">-13&deg;</option>
+        <option value="-14">-14&deg;</option>
+        <option value="-15">-15&deg;</option>
+        <option value="-16">-16&deg;</option>
+        <option value="-17">-17&deg;</option>
+        <option value="-18">-18&deg; - Astronomical dawn / Nigh</option>
+      </select>
+      
+    </div>
+    
   </div>
 </script>
 <script type="text/x-red" data-help-name="light-scheduler">
