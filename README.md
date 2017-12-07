@@ -54,7 +54,7 @@ The Light Scheduler have three modes that control how and when a message will be
 
 ## Changelog
 
-### v0.0.11 (TBD)
+### v0.0.11 (Work in Progress - Not published on NPM yet)
 * Added a sun elevation threshold to the dusk/dawn section. It's now possible to adjust how early / late the sun position should affect the output. Sun elevation over the horizon is used instead of a time-offset, this will cater for a more consistant result over the year as the sun trajectory changes over time. (Fixes issue #3)
 * Added drag-and drop. Thank you @erikalveflo!
 * Fixed problem with schedules ending at sunday midnight (Issue #6). Thank you @erikalveflo!
