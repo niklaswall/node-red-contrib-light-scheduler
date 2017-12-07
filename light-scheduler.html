@@ -200,6 +200,9 @@
       }
     </style>
     <div id="calendar" style="width: 100%; border: 1px solid grey"></div>
+    <div class="form-row">      
+      <p style="padding-top: 10px"><i class="fa fa-info-circle"></i> Note: Marked schedule = "On Payload"</p>
+    </div>    
   </div>
 
 
@@ -219,9 +222,6 @@
       <label for="node-input-offPayload"><i class="fa fa-envelope"></i> Off Payload</label>
       <input type="text" id="node-input-offPayload" placeholder="OFF"></input>
       <input type="hidden" id="node-input-offPayloadType"></input>
-    </div>
-    <div class="form-row">
-      <p><i class="fa fa-info-circle"></i> Note: Marked schedule = "On Payload"</p>
     </div>
     <div class="form-row">
       <label for="node-input-outputfreq"><i class="fa fa-play"></i> Output </label>
@@ -285,7 +285,7 @@
 <script type="text/x-red" data-help-name="light-scheduler">
   <p>A node to control light based on a schedule and the sun position.</p>
   <p>The marked area in the weekly schedule correlates to the "On Payload" and the non marked area to the "Off Payload". The Dusk / Dawn settings overrides the schedule so that the sun position will force the schedule "Off" during daylight.</p>
-  <p>For more information on planned features and changes please <a href="https://github.com/niklaswall/node-red-contrib-light-scheduler#planned-features--changes>"read here</a>.</p>
+  <p>For more information on planned features and changes please <a href="https://github.com/niklaswall/node-red-contrib-light-scheduler#planned-features--changes">read here</a>.</p>
   <h3>Inputs</h3>
   <dl class="message-properties">
     <dt>payload <span class="property-type">string</span></dt>
@@ -324,6 +324,7 @@
       <li>"Only when dark" - Require it "to be dark" and that the schedule allows it, to go "ON".</li>
       <li>"Schedule only" - Only control the output based on the schedule.</li>
   </ul>
+  <p>The <i>Threshold</i> adjusts the sun angle that should be used for determining if is is dark or not. A higher value will make the output turn on when it's brighter and a lower when it's darker. 0&deg; corresponds to the time when the sun is at the horizon.</p>
 
 
 </script>
