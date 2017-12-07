@@ -2,7 +2,7 @@
   RED.nodes.registerType('light-scheduler', {
     category: 'function',
     color:"#F8B1FF",
-    defaults: {      
+    defaults: {
       settings: {value: "", type: "light-scheduler-settings"},
       events: {value:"[]"},
       topic: {value:""},
@@ -13,55 +13,68 @@
       offPayloadType: {value:"str"},
       onlyWhenDark: {value: true},
       outputfreq: {value: "output.statechange.startup"}
-		},
+    },
     inputs: 1,
     outputs: 1,
-		icon: 'cal.png',
-		paletteLabel: 'Light Scheduler',
+    icon: 'cal.png',
+    paletteLabel: 'Light Scheduler',
     label: function(){
       return this.name?this.name:'Light Scheduler'
     },
     inputLabels: ['Control Input'],
     outputLabels: ['Schedule Output'],
-		oneditprepare: function() {
+    oneditprepare: function() {
       var node = this;
 
       node.fromMoment = function(m) {
-        m = moment(m);                
-        var dow = m.format('d');
-        var mod = m.hours()*60 + m.minutes();
-        var o = {dow: dow, mod: mod};
-        return o;
-      }
+        m = moment(m);
+        return {
+          dow: m.day(),
+          mod: m.hours() * 60 + m.minutes(),
+        };
+      };
 
       node.toMoment = function(o) {
-        var day = o.dow==0?7:o.dow;
+        var day = o.dow == 0 ? 7 : o.dow;
         var m = moment('2018-01-0' + day + ' 00:00:00');
-        var hours = Math.floor(o.mod / 60);
-        var minutes = o.mod - (hours*60);
-        m.hours(hours);
-        m.minutes(minutes);
+        m.hours(Math.floor(o.mod / 60));
+        m.minutes(o.mod % 60);
         return m;
-      }
+      };
+
+      node.nextId = (function() {
+        var id = 0;
+        return function() {
+          return id++;
+        };
+      })();
 
       var setup = function(node) {
         $("#node-input-duskdawn").val(node.onlyWhenDark ? 'duskdawn.goldenhour' : 'duskdawn.none');
         $("#node-input-outputfreq").val(node.outputfreq ? node.outputfreq : 'output.statechange.startup');
 
-        node.configuredEvents= [];
-        JSON.parse(node.events).map(function(e) {
+        node.configuredEvents = [];
+        JSON.parse(node.events).forEach(function(e) {
           if(!(e.start != undefined && e.start.dow != undefined && e.start.mod != undefined))
             return;
+          if(!(e.end != undefined && e.end.dow != undefined && e.end.mod != undefined))
+            return;
+
           eventData = {
+            id: node.nextId(),
             title: '',
             start: node.toMoment(e.start),
             end: node.toMoment(e.end),
-            stick: true
-          };       
+            stick: true,
+          };
+
+          if(eventData.start.isAfter(eventData.end)) {
+            // start is a sunday (which is moved from date 0 to 7)
+            eventData.end.add(7, 'days');
+          }
+
           node.configuredEvents.push(eventData);
         });
-        //var id = configuredEvents.length;
-        
 
         $('#calendar').fullCalendar({
           timezone: false,
@@ -69,60 +82,72 @@
           header: false,
           footer: false,
           firstDay: 1,
-          allDaySlot: false,          
+          allDaySlot: false,
           defaultView: 'agendaWeek',
           timeFormat: 'H:mm',
           slotLabelFormat: 'H:mm',
           columnFormat: 'ddd',
           duration: '00:15:00',
           snapDuration: '00:15:00',
-          displayEventTime: false,          
+          displayEventTime: false,
           selectOverlap: false,
+          eventOverlap: false,
           selectable: true,
+          editable: true,
           events: node.configuredEvents,
           select: function(start, end) {
-            eventData = {
+            // Remove timezone
+            start = node.toMoment(node.fromMoment(start));
+            end = node.toMoment(node.fromMoment(end));
+
+            var eventData = {
+              id: node.nextId(),
               title: '',
               start: start,
               end: end,
-              stick: true
-            };            
-            $('#calendar').fullCalendar('renderEvent', eventData, true);				    
-				    $('#calendar').fullCalendar('unselect');    
-            node.configuredEvents.push(eventData);        
-			    },
-          selectAllow: function(selectInfo) {
-            return true; // TODO: Validate that start and end is the same day.
-          },
-          eventClick: function(calEvent, jsEvent, view) {
-            $('#calendar').fullCalendar('removeEvents', calEvent._id);
+              stick: true,
+            };
 
-            // Redude the configureEvents to exclude the removed event.
-            node.configuredEvents = node.configuredEvents.filter(function(event) {
-              var eventStart = moment.utc(event.start);
-              if(eventStart.isSame(calEvent.start, 'minute'))
-                return false;
+            $('#calendar').fullCalendar('renderEvent', eventData, true);
+            $('#calendar').fullCalendar('unselect');
+
+            node.configuredEvents.push(eventData);
+          },
+          selectAllow: function(selectInfo) {
+            var start = moment(selectInfo.start);
+            var end = moment(selectInfo.end);
+            if(start.isSame(end, 'day')) {
               return true;
+            }
+            if(start.add(1, 'day').startOf('day').isSame(end, 'minute')) {
+              return true; // Next day but midnight
+            }
+            return false;
+          },
+          eventClick: function(event, jsEvent, view) {
+            $('#calendar').fullCalendar('removeEvents', event._id);
+            node.configuredEvents = node.configuredEvents.filter(function(e) {
+              return event._id != e.id;
             });
           },
           eventResize: function(event, delta, revertFunc) {
-
-            node.configuredEvents.map(function(e) {
-              var eStart = moment.utc(e.start);
-              if(eStart.isSame(event.start, 'minute'))
-                e.end = moment.utc(e.end).add(delta);
+            node.configuredEvents.forEach(function(e) {
+              if(event._id == e.id) {
+                e.end = moment(e.end).add(delta);
+              }
             });
-
           },
-          eventDrop: function(event, delta, revertFunc, jsEvent, ui, view ) {
-            revertFunc(); // D&D was buggy, so disabling for now.
+          eventDrop: function(event, delta, revertFunc, jsEvent, ui, view) {
+            node.configuredEvents.forEach(function(e) {
+              if(event._id == e.id) {
+                e.start = moment(e.start).add(delta);
+                e.end = moment(e.end).add(delta);
+              }
+            });
           },
-          
-			    editable: true,
         });
-        
 
-        if(node.onPayloadType == null) {https://github.com/niklaswall/node-red-contrib-light-scheduler.git
+        if(node.onPayloadType == null) {
           node.onPayloadType = "str";
         }
         $("#node-input-onPayloadType").val(node.onPayloadType);
@@ -143,44 +168,41 @@
           typeField: $("#node-input-offPayloadType"),
           types:['str','num','bool','json']
         });
-			}
+      }
 
-			$.getScript('light-scheduler/js/moment.min.js')
-			.done(function(data, textStatus, jqxhr) {
-			  $.getScript('light-scheduler/js/fullcalendar.min.js')
-			  .done(function(data, textStatus, jqxhr){
+      $.getScript('light-scheduler/js/moment.min.js')
+      .done(function(data, textStatus, jqxhr) {
+        $.getScript('light-scheduler/js/fullcalendar.min.js')
+        .done(function(data, textStatus, jqxhr){
           setup(node);
-			  })
-			  .fail(function(jqxhr, settings, exception ){
-				  console.log("failed to load fullcalendar.min.js");
-				  console.log(exception);
-				  console.log(exception.stack);
-			  });
-			});
-		},
-		oneditsave: function() {
-			var node = this;
+        })
+        .fail(function(jqxhr, settings, exception ){
+          console.log("failed to load fullcalendar.min.js");
+          console.log(exception);
+          console.log(exception.stack);
+        });
+      });
+    },
+    oneditsave: function() {
+      var node = this;
 
       // Transform and store data
-      var data = [];
-      node.configuredEvents.map(function(e) {
-        var start = node.fromMoment(e.start);
-        var end = node.fromMoment(e.end);
-        data.push({start: start, end: end});        
+      var events = node.configuredEvents.map(function(e) {
+        return {
+          start: node.fromMoment(e.start),
+          end: node.fromMoment(e.end),
+        };
       });
+      node.events = JSON.stringify(events);
 
-      node.events = JSON.stringify(data);
-      
       var duskdawn = $("#node-input-duskdawn").val();
       node.onlyWhenDark = (duskdawn == 'duskdawn.goldenhour');
 
-
-
-			delete window.calendar;
-		},
-		oneditresize: function() {
-		}
-	});
+      delete window.calendar;
+    },
+    oneditresize: function() {
+    }
+  });
 </script>
 <script type="text/x-red" data-template-name="light-scheduler">
   <div class="form-row">
@@ -203,9 +225,9 @@
 
 
   <div style="padding-top: 15px">
-    <h5>Output</h5> 
-    
-    <div class="form-row">    
+    <h5>Output</h5>
+
+    <div class="form-row">
       <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</label>
       <input type="text" id="node-input-topic" placeholder="Topic"></input>
     </div>
@@ -231,7 +253,7 @@
       </select>
     </div>
   </div>
-  
+
   <div style="padding-top: 15px">
     <h5>Dusk / Dawn</h5>
 
@@ -260,7 +282,7 @@
         <li>on / 1 - Forces output to ON state.</li>
         <li>off / 0 - Forces output to OFF state.</li>
         <li>light-only - Ignores the schedule and turns ON if it is considered dark.</li>
-        <li>schedule-only - Ignores the light level and turns ON according to schedule.</li>        
+        <li>schedule-only - Ignores the light level and turns ON according to schedule.</li>
       </ul>
       <i>Please Note:</i> The override is runtime only and will revert to auto during deploy / restart.
       </p>
