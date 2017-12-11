@@ -9,8 +9,9 @@ module.exports = function(RED) {
   var LightScheduler = function(n) {
 
     RED.nodes.createNode(this, n);
-    this.settings = RED.nodes.getNode(n.settings); // Get global settings
+    this.settings = RED.nodes.getNode(n.settings); // Get global settings    
     this.events = JSON.parse(n.events);
+    this.runningEvents = JSON.parse(n.events); // With possible randomness.
     this.topic = n.topic;
     this.onPayload = n.onPayload;
     this.onPayloadType = n.onPayloadType;
@@ -20,10 +21,32 @@ module.exports = function(RED) {
     this.sunElevationThreshold = n.sunElevationThreshold ? n.sunElevationThreshold : 6;
     this.sunShowElevationInStatus = n.sunShowElevationInStatus | false;
     this.outputfreq = n.outputfreq ? n.outputfreq : 'output.statechange.startup';
+    this.scheduleRndMax = !isNaN(parseInt(n.scheduleRndMax)) ? parseInt(n.scheduleRndMax) : 0;
+    this.scheduleRndMax = Math.max(Math.min(this.scheduleRndMax, 60), 0); // 0 -> 60 allowed
     this.override = 'auto';
     this.prevPayload = null;
     var node = this;
 
+
+    function randomizeSchedule() {
+      function offsetMOD() {
+        var min = 0 - node.scheduleRndMax;
+        var max = node.scheduleRndMax;
+        return Math.floor(Math.random() * (max - min) + min);
+      }
+
+      node.runningEvents = node.events.map((event) => {
+        var minutes = event.end.mod - event.start.mod;
+        event.start.mod = event.start.mod + offsetMOD();
+        event.end.mod = event.end.mod + offsetMOD();                
+
+        if(event.end.mod <= event.start.mod) // Handle "too short events"
+          event.end.mod = event.start.mod + minutes; // Events can overlap, but we don't need to care about that
+
+        return event;
+      });
+    }
+    
 
     function setState(out) {
       var msg = {
@@ -107,7 +130,15 @@ module.exports = function(RED) {
 
     node.on('close', function() {
       clearInterval(node.evalInterval);
+      clearInterval(node.rndInterval);
     });
+
+    if(node.scheduleRndMax > 0) {
+      randomizeSchedule();
+      // Randomize schedule every hour for now, could cause problems with large scheduleRndMax.
+      node.rndInterval = setInterval(randomizeSchedule, 1*60*60*1000);
+    }
+
 	};
 
 

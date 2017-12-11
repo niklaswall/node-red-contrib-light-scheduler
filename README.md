@@ -16,6 +16,11 @@ The schedule is on a weekly basis, so each week day can be individually defined.
 ![Editor](https://raw.githubusercontent.com/niklaswall/node-red-contrib-light-scheduler/master/screenshots/editor.png "Editor")
 
 
+### Schedule Randomization
+
+On top of the schedule a randomization of the start and end-times can be added by defining a Randomness value in minutes. The start and end-times will be offset positively and negatively with a random time up to the defined number of minutes (Example: a value of 5 equals +/- 5 minutes). 60 is the maximum random time that can be configured.
+
+
 ### Dusk / Dawn overrides
 
 To save energy it's nice to be able to only have the lamps and other functions only turn on / off when it bright / dark outside.
@@ -53,6 +58,9 @@ The Light Scheduler have three modes that control how and when a message will be
 
 
 ## Changelog
+
+### v0.0.12 (Not published on NPM yet)
+* Added schedule randomization. You configure the max number of minutes to randomize start and end-times for the schedule.
 
 ### v0.0.11 (December 7, 2017)
 * Added a sun elevation threshold to the dusk/dawn section. It's now possible to adjust how early / late the sun position should affect the output. Sun elevation over the horizon is used instead of a time-offset, this will cater for a more consistant result over the year as the sun trajectory changes over time. (Fixes issue #3)

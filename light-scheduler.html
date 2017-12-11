@@ -12,6 +12,7 @@
       offPayload: {value:"OFF", validate: RED.validators.typedInput("offPayloadType")},
       offPayloadType: {value:"str"},
       onlyWhenDark: {value: true},
+      scheduleRndMax: {value: 0},
       sunElevationThreshold: {value: 6, required: true, validate: RED.validators.number()},
       sunShowElevationInStatus: {value: false},
       outputfreq: {value: "output.statechange.startup"}
@@ -53,7 +54,7 @@
 
       var setup = function(node) {
         $("#node-input-duskdawn").val(node.onlyWhenDark ? 'duskdawn.goldenhour' : 'duskdawn.none');
-        $("#node-input-outputfreq").val(node.outputfreq ? node.outputfreq : 'output.statechange.startup');
+        $("#node-input-outputfreq").val(node.outputfreq ? node.outputfreq : 'output.statechange.startup');        
 
         node.configuredEvents = [];
         JSON.parse(node.events).forEach(function(e) {
@@ -226,6 +227,10 @@
     <div class="form-row">      
       <p style="padding-top: 10px"><i class="fa fa-info-circle"></i> Note: Marked schedule = "On Payload"</p>
     </div>    
+    <div class="form-row">
+      <label for="node-input-scheduleRndMax"><i class="fa fa-tasks"></i> Randomness (in minutes)</label>
+      <input type="text" id="node-input-scheduleRndMax" placeholder="0"></input>
+    </div>
   </div>
 
 
