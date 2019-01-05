@@ -66,7 +66,7 @@ module.exports = function(RED) {
       node.status({fill: out?"green":"red", shape: "dot", text: (out ? 'ON' : 'OFF') + sunElevation + overrideTxt});
 
       // Only send anything if the state have changed.
-      if(node.outputfreq == 'output.minutely' || msg.payload !== node.prevPayload)
+      if(node.outputfreq == 'output.minutely' || !RED.util.compareObjects(msg.payload, node.prevPayload))
       {
         node.send(msg);
         node.prevPayload = msg.payload;
