@@ -100,11 +100,12 @@ module.exports = function(RED) {
     }
 
     node.on('input', function(msg) {
-      msg.payload = msg.payload.toString() // Make sure we have a string.
-      if (msg.payload.match(/^(1|on|0|off|auto|stop|schedule-only|light-only)$/i)) {
-        if (msg.payload == '0') msg.payload = 'off'
-        if (msg.payload == '1') msg.payload = 'on'
-        node.override = msg.payload.toLowerCase()
+      msg.payload = msg.payload.toString(); // Make sure we have a string.
+      if(msg.payload.match(/^(1|on|0|off|auto|stop|schedule-only|light-only|trigger)$/i))
+      {
+        if(msg.payload == '0') msg.payload = 'off';
+        if(msg.payload == '1') msg.payload = 'on';
+        node.override = msg.payload.toLowerCase();
         //console.log("Override: " + node.override);
       } else node.warn('Failed to interpret incoming msg.payload. Ignoring it!')
 
