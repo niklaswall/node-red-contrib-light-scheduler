@@ -67,7 +67,7 @@ module.exports = function(RED) {
       })
 
       // Only send anything if the state have changed.
-      if (node.outputfreq == 'output.minutely' || msg.payload !== node.prevPayload) {
+      if(node.outputfreq == 'output.minutely' || !RED.util.compareObjects(msg.payload, node.prevPayload)) {      
         if (!node.firstEval) node.send(msg)
         node.prevPayload = msg.payload
       }
