@@ -13,7 +13,7 @@ _PLEASE NOTE:_ I have had some bad luck with the email notifications from github
 The graphical scheduler makes it quick and easy to define when you want your output to turn on / off.
 The schedule is on a weekly basis, so each week day can be individually defined.
 
-![Editor](https://raw.githubusercontent.com/niklaswall/node-red-contrib-light-scheduler/master/screenshots/editor.png "Editor")
+![Editor](https://raw.githubusercontent.com/niklaswall/node-red-contrib-light-scheduler/master/screenshots/editor.png 'Editor')
 
 ### Schedule Randomization
 
@@ -27,13 +27,13 @@ The Light Scheduler default is to calculate the sun's position for the given pos
 ### Overrides
 
 The automatic state of the Light Scheduler can be overridden by injecting a string in msg.payload.
-![Overrides](https://github.com/niklaswall/node-red-contrib-light-scheduler/raw/master/screenshots/override.png "Overrides")
+![Overrides](https://github.com/niklaswall/node-red-contrib-light-scheduler/raw/master/screenshots/override.png 'Overrides')
 
 msg.payload can be either 'on', 'off', 'schedule-only', 'light-only' or 'auto'. **Auto** will remove the override and make the light scheduler work as normal. **Schedule Only** will ignore the light level and control the output only according to the schedule. **Light Only** will ignore the schedule and only care about the light level.
 
 The override functionality could for example be used to force lights to turn on when motion is detected, but with the condition that it's dark.
 
-![Motion Override](https://raw.githubusercontent.com/niklaswall/node-red-contrib-light-scheduler/master/screenshots/motion_override.png "Motion Override")
+![Motion Override](https://raw.githubusercontent.com/niklaswall/node-red-contrib-light-scheduler/master/screenshots/motion_override.png 'Motion Override')
 
 ### Customizable on/off payloads (and topic).
 
@@ -58,6 +58,7 @@ The Light Scheduler have three modes that control how and when a message will be
 ### v0.0.12 (Not published on NPM yet)
 
 - Added schedule randomization. You configure the max number of minutes to randomize start and end-times for the schedule.
+- Fixed #15 (Node-red crashes). Error when no Latitude / Longitude is configured.
 
 ### v0.0.11 (December 7, 2017)
 
