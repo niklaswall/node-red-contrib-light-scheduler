@@ -60,6 +60,7 @@ The Light Scheduler have three modes that control how and when a message will be
 - Added schedule randomization. You configure the max number of minutes to randomize start and end-times for the schedule.
 - Fixed #15 (Node-red crashes). Error when no Latitude / Longitude is configured.
 - Fixed #16 (Problem with when-state-changes?). Now obeying the "when state changes" setting on node-red restart and for newly placed nodes.
+- Merged pull request #26 by @WizBangCrash that fixes a state change compare to cater for objects not referenced
 
 ### v0.0.11 (December 7, 2017)
 
