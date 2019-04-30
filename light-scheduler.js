@@ -28,6 +28,11 @@ module.exports = function(RED) {
     this.manualTrigger = false
     var node = this
 
+    function isEqual(a, b) {
+      // simpler and more what we want compared to RED.utils.compareObjects()
+      return JSON.stringify(a) === JSON.stringify(b)
+    }
+
     function randomizeSchedule() {
       function offsetMOD() {
         var min = 0 - node.scheduleRndMax
@@ -68,11 +73,7 @@ module.exports = function(RED) {
       })
 
       // Only send anything if the state have changed, on trigger and when configured to output on a minutely basis.
-      if (
-        node.manualTrigger ||
-        node.outputfreq == 'output.minutely' ||
-        !RED.util.compareObjects(msg.payload, node.prevPayload)
-      ) {
+      if (node.manualTrigger || node.outputfreq == 'output.minutely' || !isEqual(msg.payload, node.prevPayload)) {
         if (!node.firstEval) node.send(msg)
         node.prevPayload = msg.payload
       }
@@ -123,7 +124,10 @@ module.exports = function(RED) {
     node.evalInterval = setInterval(evaluate, 60000)
 
     // Run initially directly after start / deploy.
-    if (node.outputfreq != 'output.statechange') setTimeout(evaluate, 1000)
+    if (node.outputfreq != 'output.statechange') {
+      node.firstEval = false
+      setTimeout(evaluate, 1000)
+    }
 
     node.on('close', function() {
       clearInterval(node.evalInterval)
