@@ -25,6 +25,7 @@ module.exports = function(RED) {
     this.override = 'auto'
     this.prevPayload = null
     this.firstEval = true
+    this.manualTrigger = false
     var node = this
 
     function randomizeSchedule() {
@@ -66,12 +67,17 @@ module.exports = function(RED) {
         text: (out ? 'ON' : 'OFF') + sunElevation + overrideTxt,
       })
 
-      // Only send anything if the state have changed.
-      if(node.outputfreq == 'output.minutely' || !RED.util.compareObjects(msg.payload, node.prevPayload)) {      
+      // Only send anything if the state have changed, on trigger and when configured to output on a minutely basis.
+      if (
+        node.manualTrigger ||
+        node.outputfreq == 'output.minutely' ||
+        !RED.util.compareObjects(msg.payload, node.prevPayload)
+      ) {
         if (!node.firstEval) node.send(msg)
         node.prevPayload = msg.payload
       }
       node.firstEval = false
+      node.manualTrigger = false
     }
 
     function evaluate() {
@@ -100,16 +106,17 @@ module.exports = function(RED) {
     }
 
     node.on('input', function(msg) {
-      msg.payload = msg.payload.toString(); // Make sure we have a string.
-      if(msg.payload.match(/^(1|on|0|off|auto|stop|schedule-only|light-only|trigger)$/i))
-      {
-        if(msg.payload == '0') msg.payload = 'off';
-        if(msg.payload == '1') msg.payload = 'on';
-        node.override = msg.payload.toLowerCase();
-        //console.log("Override: " + node.override);
-      } else node.warn('Failed to interpret incoming msg.payload. Ignoring it!')
+      msg.payload = msg.payload.toString() // Make sure we have a string.
+      if (msg.payload.match(/^(1|on|0|off|auto|stop|schedule-only|light-only|trigger)$/i)) {
+        if (msg.payload == '0') msg.payload = 'off'
+        if (msg.payload == '1') msg.payload = 'on'
 
-      evaluate()
+        // Store override, unless trigger
+        if (!msg.payload.match(/^(trigger)$/i)) node.override = msg.payload.toLowerCase()
+        else node.manualTrigger = true
+
+        evaluate()
+      } else node.warn('Failed to interpret incoming msg.payload. Ignoring it!')
     })
 
     // re-evaluate every minute
