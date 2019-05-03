@@ -23,6 +23,7 @@
     "sunrise",
     "timer"
   ],
+  "homepage": "https://faulty.cloud/projects/node-red-contrib-light-scheduler",
   "bugs": {
     "url": "https://github.com/niklaswall/node-red-contrib-light-scheduler/issues"
   },
