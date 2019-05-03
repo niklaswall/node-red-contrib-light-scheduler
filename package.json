@@ -34,6 +34,7 @@
   "node-red": {
     "nodes": {
       "light-scheduler": "light-scheduler.js",
+      "light-scheduler-filter": "light-scheduler-filter.js",
       "light-scheduler-settings": "light-scheduler-settings.js"
     }
   },
