@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-light-scheduler",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "author": "Niklas Wall",
   "description": "Light Scheduler is a node-red node that provides a weekly schedule, and is mainly focused on controlling light in home automation scenarios.",
   "license": "Apache-2.0",
