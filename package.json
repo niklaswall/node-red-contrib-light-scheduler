@@ -35,7 +35,8 @@
     "nodes": {
       "light-scheduler": "light-scheduler.js",
       "light-scheduler-filter": "light-scheduler-filter.js",
-      "light-scheduler-settings": "light-scheduler-settings.js"
+      "light-scheduler-settings": "light-scheduler-settings.js",
+      "light-scheduler-schedule": "light-scheduler-schedule.js"
     }
   },
   "devDependencies": {

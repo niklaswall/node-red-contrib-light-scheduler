@@ -1,0 +1,258 @@
+<script type="text/javascript">
+    RED.nodes.registerType('light-scheduler-schedule', {
+      category: 'config',
+      defaults: {
+        name: {value: 'my schedule', required:true},
+        onlyWhenDark: {value: true},
+        events: {value: '[]'},
+        name: {value: ''},
+        scheduleRndMax: {value: 0},
+        sunElevationThreshold: {value: 6, required: true, validate: RED.validators.number()}
+      },
+      label: function() {
+        return this.name;
+      },
+      oneditprepare: function() {
+        var node = this;
+
+        node.fromMoment = function(m) {
+        m = moment(m)
+        return {
+          dow: m.day(),
+          mod: m.hours() * 60 + m.minutes(),
+        }
+      }
+
+      node.toMoment = function(o) {
+        var day = o.dow == 0 ? 7 : o.dow
+        var m = moment('2018-01-0' + day + ' 00:00:00')
+        m.hours(Math.floor(o.mod / 60))
+        m.minutes(o.mod % 60)
+        return m
+      }
+
+      node.nextId = (function() {
+        var id = 0
+        return function() {
+          return id++
+        }
+      })()
+
+        var setup = function(node) {
+        $('#node-config-input-duskdawn').val(node.onlyWhenDark ? 'duskdawn.goldenhour' : 'duskdawn.none')
+        node.configuredEvents = []
+        JSON.parse(node.events).forEach(function(e) {
+          if (!(e.start != undefined && e.start.dow != undefined && e.start.mod != undefined)) return
+          if (!(e.end != undefined && e.end.dow != undefined && e.end.mod != undefined)) return
+
+          eventData = {
+            id: node.nextId(),
+            title: '',
+            start: node.toMoment(e.start),
+            end: node.toMoment(e.end),
+            stick: true,
+          }
+
+          if (eventData.start.isAfter(eventData.end)) {
+            // start is a sunday (which is moved from date 0 to 7)
+            eventData.end.add(7, 'days')
+          }
+
+          node.configuredEvents.push(eventData)
+        })
+
+        $('#calendar').fullCalendar({
+          timezone: false,
+          defaultDate: moment('2018-01-01 00:00:00'),
+          header: false,
+          footer: false,
+          firstDay: 1,
+          allDaySlot: false,
+          defaultView: 'agendaWeek',
+          timeFormat: 'H:mm',
+          slotLabelFormat: 'H:mm',
+          columnFormat: 'ddd',
+          duration: '00:15:00',
+          snapDuration: '00:15:00',
+          displayEventTime: false,
+          selectOverlap: false,
+          eventOverlap: false,
+          selectable: true,
+          editable: true,
+          events: node.configuredEvents,
+          select: function(start, end) {
+            // Remove timezone
+            start = node.toMoment(node.fromMoment(start))
+            end = node.toMoment(node.fromMoment(end))
+
+            var eventData = {
+              id: node.nextId(),
+              title: '',
+              start: start,
+              end: end,
+              stick: true,
+            }
+
+            $('#calendar').fullCalendar('renderEvent', eventData, true)
+            $('#calendar').fullCalendar('unselect')
+
+            node.configuredEvents.push(eventData)
+          },
+          selectAllow: function(selectInfo) {
+            var start = moment(selectInfo.start)
+            var end = moment(selectInfo.end)
+            if (start.isSame(end, 'day')) {
+              return true
+            }
+            if (
+              start
+                .add(1, 'day')
+                .startOf('day')
+                .isSame(end, 'minute')
+            ) {
+              return true // Next day but midnight
+            }
+            return false
+          },
+          eventClick: function(event, jsEvent, view) {
+            $('#calendar').fullCalendar('removeEvents', event._id)
+            node.configuredEvents = node.configuredEvents.filter(function(e) {
+              return event._id != e.id
+            })
+          },
+          eventResize: function(event, delta, revertFunc) {
+            node.configuredEvents.forEach(function(e) {
+              if (event._id == e.id) {
+                e.end = moment(e.end).add(delta)
+              }
+            })
+          },
+          eventDrop: function(event, delta, revertFunc, jsEvent, ui, view) {
+            node.configuredEvents.forEach(function(e) {
+              if (event._id == e.id) {
+                e.start = moment(e.start).add(delta)
+                e.end = moment(e.end).add(delta)
+              }
+            })
+          },
+        })
+      }
+
+      $.getScript('light-scheduler/js/moment.min.js').done(function(data, textStatus, jqxhr) {
+        $.getScript('light-scheduler/js/fullcalendar.min.js')
+          .done(function(data, textStatus, jqxhr) {
+            setup(node)
+          })
+          .fail(function(jqxhr, settings, exception) {
+            console.log('failed to load fullcalendar.min.js')
+            console.log(exception)
+            console.log(exception.stack)
+          })
+      })
+      },
+      oneditsave: function() {
+        var node = this
+        var duskdawn = $('#node-config-input-duskdawn').val()
+        node.onlyWhenDark = duskdawn == 'duskdawn.goldenhour'
+
+        // Transform and store data
+        var events = node.configuredEvents.map(function(e) {
+          return {
+            start: node.fromMoment(e.start),
+            end: node.fromMoment(e.end),
+          }
+        })
+        node.events = JSON.stringify(events)
+
+        delete window.calendar
+
+      },
+      oneditcancel: function() {
+
+      }
+    });
+  </script>
+  <script type="text/x-red" data-template-name="light-scheduler-schedule">
+    <div class="form-row">
+      <label for="node-config-input-name"><i class="icon-bookmark"></i> Name</label>
+      <input type="text" id="node-config-input-name">
+    </div>
+
+    <div style="padding-top: 15px">
+      <h5>Dusk / Dawn</h5>
+      <div class="form-row">
+        <label for="node-config-input-duskdawn"><i class="fa fa-moon-o"></i> Dusk / Dawn</label>
+        <select id="node-config-input-duskdawn">
+          <option value="duskdawn.goldenhour">Only when dark</option>
+          <option value="duskdawn.none">Schedule only</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="node-config-input-sunElevationThreshold"><i class="fa fa-sun-o"></i> Threshold </label>
+        <select id="node-config-input-sunElevationThreshold">
+          <option value="10">+10&deg;</option>
+          <option value="9">+9&deg;</option>
+          <option value="8">+8&deg;</option>
+          <option value="7">+7&deg;</option>
+          <option value="6">+6&deg; - Golden Hour</option>
+          <option value="5">+5&deg;</option>
+          <option value="4">+4&deg;</option>
+          <option value="3">+3&deg;</option>
+          <option value="2">+2&deg;</option>
+          <option value="1">+1&deg;</option>
+          <option value="0">+0&deg; - Sunset / Sunrise</option>
+          <option value="-1">-1&deg;</option>
+          <option value="-2">-2&deg;</option>
+          <option value="-3">-3&deg;</option>
+          <option value="-4">-4&deg;</option>
+          <option value="-5">-5&deg;</option>
+          <option value="-6">-6&deg; - Civil dawn</option>
+          <option value="-7">-7&deg;</option>
+          <option value="-8">-8&deg;</option>
+          <option value="-9">-9&deg;</option>
+          <option value="-10">-10&deg;</option>
+          <option value="-11">-11&deg;</option>
+          <option value="-12">-12&deg; - Nautical dawn</option>
+          <option value="-13">-13&deg;</option>
+          <option value="-14">-14&deg;</option>
+          <option value="-15">-15&deg;</option>
+          <option value="-16">-16&deg;</option>
+          <option value="-17">-17&deg;</option>
+          <option value="-18">-18&deg; - Astronomical dawn / Nigh</option>
+        </select>
+      </div>
+  
+    </div>
+    <div class="form-row">
+      <link rel='stylesheet' href='light-scheduler/js/fullcalendar.min.css' />
+      <style type="text/css">
+        .wc-business-hours {
+          font-size: 1.0em;
+        }
+      </style>
+      <div id="calendar" style="width: 100%; border: 1px solid grey"></div>
+      <div class="form-row">
+        <p style="padding-top: 10px"><i class="fa fa-info-circle"></i> Note: Marked schedule = Forward to first output</p>
+      </div>
+      <div class="form-row">
+        <label for="node-config-input-scheduleRndMax"><i class="fa fa-tasks"></i> Randomness (in minutes)</label>
+        <input type="text" id="node-config-input-scheduleRndMax" placeholder="0"></input>
+      </div>
+
+    </div>
+  </script>
+  <script type="text/x-red" data-help-name="light-scheduler-schedule">
+    <h3>Schedule</h3>
+
+    <p>The marked area in the weekly schedule correlates to the first output and the non marked area to the second output. The Dusk / Dawn settings overrides the schedule so that the sun position will force the schedule to the second output during daylight.</p>
+    <p>For more information on planned features and changes please <a href="https://faulty.cloud/projects/node-red-contrib-light-scheduler">read here</a>.</p>
+
+    <h3>Dusk / Dawn</h3>
+    The Dusk / Dawn setting can be either of:
+    <ul>
+        <li>"Only when dark" - Require it "to be dark" and that the schedule allows it, to match.</li>
+        <li>"Schedule only" - Only control the output based on the schedule.</li>
+    </ul>
+    <p>The <i>Threshold</i> adjusts the sun angle that should be used for determining if is is dark or not. A higher value will make the output turn on when it's brighter and a lower when it's darker. 0&deg; corresponds to the time when the sun is at the horizon.</p>
+
+  </script>

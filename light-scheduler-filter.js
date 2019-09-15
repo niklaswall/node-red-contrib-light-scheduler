@@ -9,13 +9,17 @@ module.exports = function(RED) {
   var LightSchedulerFilter = function(n) {
     RED.nodes.createNode(this, n)
     this.settings = RED.nodes.getNode(n.settings) // Get global settings
-    this.events = JSON.parse(n.events)
-    this.runningEvents = JSON.parse(n.events) // With possible randomness.
-    this.onlyWhenDark = n.onlyWhenDark
-    this.sunElevationThreshold = n.sunElevationThreshold ? n.sunElevationThreshold : 6
+    this.schedule = RED.nodes.getNode(n.schedule) // Get global schedule
     this.sunShowElevationInStatus = n.sunShowElevationInStatus | false
-    this.scheduleRndMax = !isNaN(parseInt(n.scheduleRndMax)) ? parseInt(n.scheduleRndMax) : 0
-    this.scheduleRndMax = Math.max(Math.min(this.scheduleRndMax, 60), 0) // 0 -> 60 allowed
+    if (typeof this.schedule !== 'undefined')
+    {
+      this.onlyWhenDark = this.schedule.onlyWhenDark
+      this.sunElevationThreshold = this.schedule.sunElevationThreshold
+      this.events = this.schedule.events
+      this.runningEvents = this.schedule.events
+      this.scheduleRndMax = Math.max(Math.min(this.schedule.scheduleRndMax, 60), 0) // 0 -> 60 allowed
+    }
+
     this.state = false
     var node = this
 
@@ -68,13 +72,12 @@ module.exports = function(RED) {
     function evaluate() {
       var matchEvent = scheduler.matchSchedule(node)
 
-      // node.override == auto
-      if (!matchEvent) return setState(false)
+        if (!matchEvent) return setState(false)
 
-      if (node.onlyWhenDark) return setState(isItDark.isItDark(node))
+        if (((typeof node.schedule !== 'undefined')&&(node.schedule.onlyWhenDark))) return setState(isItDark.isItDark(node))
 
-      return setState(true)
-    }
+        return setState(true)
+      }
 
     node.on('input', function(msg) {
       // Evaluate before forwarding msg, so that we always forward to the right one.
@@ -103,11 +106,5 @@ module.exports = function(RED) {
 
   RED.nodes.registerType('light-scheduler-filter', LightSchedulerFilter)
 
-  RED.httpAdmin.get('/light-scheduler/js/*', function(req, res) {
-    var options = {
-      root: __dirname + '/static/',
-      dotfiles: 'deny',
-    }
-    res.sendFile(req.params[0], options)
-  })
+
 }
