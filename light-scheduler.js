@@ -9,19 +9,22 @@ module.exports = function(RED) {
   var LightScheduler = function(n) {
     RED.nodes.createNode(this, n)
     this.settings = RED.nodes.getNode(n.settings) // Get global settings
-    this.events = JSON.parse(n.events)
-    this.runningEvents = JSON.parse(n.events) // With possible randomness.
+    this.schedule = RED.nodes.getNode(n.schedule) // Get global schedule
+    if (typeof this.schedule !== 'undefined')
+    {
+      this.onlyWhenDark = this.schedule.onlyWhenDark
+      this.sunElevationThreshold = this.schedule.sunElevationThreshold
+      this.events = this.schedule.events
+      this.runningEvents = this.schedule.events
+      this.scheduleRndMax = Math.max(Math.min(this.schedule.scheduleRndMax, 60), 0) // 0 -> 60 allowed
+    }
     this.topic = n.topic
     this.onPayload = n.onPayload
     this.onPayloadType = n.onPayloadType
     this.offPayload = n.offPayload
     this.offPayloadType = n.offPayloadType
-    this.onlyWhenDark = n.onlyWhenDark
-    this.sunElevationThreshold = n.sunElevationThreshold ? n.sunElevationThreshold : 6
     this.sunShowElevationInStatus = n.sunShowElevationInStatus | false
     this.outputfreq = n.outputfreq ? n.outputfreq : 'output.statechange.startup'
-    this.scheduleRndMax = !isNaN(parseInt(n.scheduleRndMax)) ? parseInt(n.scheduleRndMax) : 0
-    this.scheduleRndMax = Math.max(Math.min(this.scheduleRndMax, 60), 0) // 0 -> 60 allowed
     this.override = 'auto'
     this.prevPayload = null
     this.firstEval = true
@@ -108,7 +111,7 @@ module.exports = function(RED) {
       // node.override == auto
       if (!matchEvent) return setState(false)
 
-      if (node.onlyWhenDark) return setState(isItDark.isItDark(node))
+      if (((typeof node.schedule !== 'undefined')&&(node.schedule.onlyWhenDark))) return setState(isItDark.isItDark(node))
 
       return setState(true)
     }
