@@ -126,19 +126,19 @@
           eventClick: function(event, jsEvent, view) {
             $('#calendar').fullCalendar('removeEvents', event._id)
             node.configuredEvents = node.configuredEvents.filter(function(e) {
-              return event._id != e.id
+              return event.id != e.id
             })
           },
           eventResize: function(event, delta, revertFunc) {
             node.configuredEvents.forEach(function(e) {
-              if (event._id == e.id) {
+              if (event.id == e.id) {
                 e.end = moment(e.end).add(delta)
               }
             })
           },
           eventDrop: function(event, delta, revertFunc, jsEvent, ui, view) {
             node.configuredEvents.forEach(function(e) {
-              if (event._id == e.id) {
+              if (event.id == e.id) {
                 e.start = moment(e.start).add(delta)
                 e.end = moment(e.end).add(delta)
               }
