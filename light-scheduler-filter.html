@@ -54,6 +54,12 @@
           if (!(e.start != undefined && e.start.dow != undefined && e.start.mod != undefined)) return
           if (!(e.end != undefined && e.end.dow != undefined && e.end.mod != undefined)) return
 
+          // Workaround for issue #64, for events that cross over to the next day.
+          // This should be solved by creating a new event the next day.
+          // https://github.com/niklaswall/node-red-contrib-light-scheduler/issues/64
+          if(e.start.mod > e.end.mod)
+            e.end.mod = 0;
+
           eventData = {
             id: node.nextId(),
             title: '',
@@ -130,6 +136,14 @@
             })
           },
           eventResize: function(event, delta, revertFunc) {
+           // Prevent resize outside of the current day        
+           start = moment(event.start);            
+            end = moment(event.end);
+
+            if(!start.isSame(end, 'day'))
+              if(!start.add(1, 'day').startOf('day').isSame(end, 'minute'))
+                revertFunc();
+
             node.configuredEvents.forEach(function(e) {
               if (event.id == e.id) {
                 e.end = moment(e.end).add(delta)
@@ -137,6 +151,14 @@
             })
           },
           eventDrop: function(event, delta, revertFunc, jsEvent, ui, view) {
+            // Prevent drag outside of the current day        
+            start = moment(event.start);
+            end = moment(event.end);
+
+            if(!start.isSame(end, 'day'))
+              if(!start.add(1, 'day').startOf('day').isSame(end, 'minute'))
+                revertFunc();
+                            
             node.configuredEvents.forEach(function(e) {
               if (event.id == e.id) {
                 e.start = moment(e.start).add(delta)
