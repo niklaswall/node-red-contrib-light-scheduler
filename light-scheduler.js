@@ -1,7 +1,6 @@
 module.exports = function(RED) {
   'use strict'
   var path = require('path')
-  var req = require('request')
   var util = require('util')
   var scheduler = require('./lib/scheduler.js')
   var isItDark = require('./lib/isitdark.js')
