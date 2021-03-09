@@ -2,50 +2,69 @@
   RED.nodes.registerType('light-scheduler-settings', {
     category: 'config',
     defaults: {
-      name: {value: 'my settings', required:true},
-      latitude: {value: 0, required:true, validate:RED.validators.number()},
-      longitude: {value: 0, required:true, validate:RED.validators.number()},
+      name: {value: 'my settings', required: true},
+      latitude: {value: 0, required: true, validate: RED.validators.number()},
+      longitude: {value: 0, required: true, validate: RED.validators.number()},
     },
-    label: function() {
-      return this.name;
+    label: function () {
+      return this.name
     },
-    oneditprepare: function() {
-      var node = this;
-      if ("geolocation" in navigator) {
+    oneditprepare: function () {
+      var node = this
+      try {
+        fetch('/light-scheduler/geoinfo.json').then(async response => {
+          if (response.status == 200) {
+            let data = await response.json()
+            if (data.latitude && data.longitude)
+              $('#geoip-info').html(
+                `GeoIP positioning says that your location is <b>${data.city}, ${data.country}</b> with the following position. Latitude: <b>${data.latitude}</b>, Longitude: <b>${data.longitude}</b>. If the city corresponds with your location, this should be rough coordinates that you can use.`
+              )
+          }
+        })
+      } catch (err) {
+        console.error(err)
+      }
+
+      if ('geolocation' in navigator) {
         /* geolocation is available */
         function geo_success(position) {
-          if($("#node-config-input-latitude").val() == 0)
-            $("#node-config-input-latitude").val(position.coords.latitude);
-          if($("#node-config-input-longitude").val() == 0)
-            $("#node-config-input-longitude").val(position.coords.longitude);
-          //alert("Latitude and Longitude updated according to your browser position!");
+          if ($('#node-config-input-latitude').val() == 0)
+            $('#node-config-input-latitude').val(position.coords.latitude)
+          if ($('#node-config-input-longitude').val() == 0)
+            $('#node-config-input-longitude').val(position.coords.longitude)
+          $('#browserlocation-info').html(
+            `Browser geolocation information returned the following position for you. Latitude: <b>${position.coords.latitude}</b>, Longitude: <b>${position.coords.longitude}</b>. Based on what web browser you are using and your privacy settings, this information might differ from you actual position.`
+          )
         }
-        
+
         function geo_error() {
-          //alert("Sorry, no position available. You need to configure it manually.");
+          $('#browserlocation-info').html(
+            `Your browser did not return any geolocation information. If you want to automatically use your location you must enable geolocation for this site in your browser.`
+          )
         }
-        
+
         var geo_options = {
-          enableHighAccuracy: true, 
-          maximumAge        : 30000, 
-          timeout           : 27000
-        };
-        
-        node.wpid = navigator.geolocation.watchPosition(geo_success, geo_error, geo_options);
+          enableHighAccuracy: true,
+          maximumAge: 30000,
+          timeout: 27000,
+        }
+
+        node.wpid = navigator.geolocation.watchPosition(geo_success, geo_error, geo_options)
       }
     },
-    oneditsave: function() {
-      var node = this;
-      if(node.wpid)
-        navigator.geolocation.clearWatch(node.wpid);      
+    oneditsave: function () {
+      var node = this
+      if (node.wpid) navigator.geolocation.clearWatch(node.wpid)
+      clearInterval(clockInterval)
     },
-    oneditcancel: function() {
-      var node = this;
-      if(node.wpid)
-        navigator.geolocation.clearWatch(node.wpid);      
-    }
-  });
+    oneditcancel: function () {
+      var node = this
+      if (node.wpid) navigator.geolocation.clearWatch(node.wpid)
+      clearInterval(clockInterval)
+    },
+  })
 </script>
+
 <script type="text/x-red" data-template-name="light-scheduler-settings">
   <div class="form-row">
     <label for="node-config-input-name"><i class="icon-bookmark"></i> Name</label>
@@ -59,8 +78,16 @@
   <div class="form-row">
     <label for="node-config-input-longitude"><i class="icon-globe"></i> Longitude</label>
     <input type="text" id="node-config-input-longitude">
-  </div>  
+  </div>
+
+  <div class="form-row">
+    <div id="geoip-info"></div>
+  </div>
+  <div class="form-row">
+    <div id="browserlocation-info"></div>
+  </div>
 </script>
+
 <script type="text/x-red" data-help-name="light-scheduler-settings">
   <h3>Settings</h3>
   <dl class="message-properties">
