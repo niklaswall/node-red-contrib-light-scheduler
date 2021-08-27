@@ -113,17 +113,32 @@ module.exports = function(RED) {
     }
 
     node.on('input', function(msg) {
-      msg.payload = msg.payload.toString() // Make sure we have a string.
-      if (msg.payload.match(/^(1|on|0|off|auto|stop|schedule-only|light-only|trigger)$/i)) {
-        if (msg.payload == '0') msg.payload = 'off'
-        if (msg.payload == '1') msg.payload = 'on'
+      if !msg.override {
+        msg.payload = msg.payload.toString() // Make sure we have a string.
+        if (msg.payload.match(/^(1|on|0|off|auto|stop|schedule-only|light-only|trigger)$/i)) {
+          if (msg.payload == '0') msg.payload = 'off'
+          if (msg.payload == '1') msg.payload = 'on'
 
-        // Store override, unless trigger
-        if (!msg.payload.match(/^(trigger)$/i)) node.override = msg.payload.toLowerCase()
-        else node.manualTrigger = true
+          // Store override, unless trigger
+          if (!msg.payload.match(/^(trigger)$/i)) node.override = msg.payload.toLowerCase()
+          else node.manualTrigger = true
 
-        evaluate()
-      } else node.warn('Failed to interpret incoming msg.payload. Ignoring it!')
+          evaluate()
+        } else node.warn('Failed to interpret incoming msg.payload. Ignoring it!')
+      } else {
+        msg.override = msg.override.toString() // Make sure we have a string.
+        if (msg.override.match(/^(1|on|0|off|auto|stop|schedule-only|light-only|trigger)$/i)) {
+          if (msg.override == '0') msg.override = 'off'
+          if (msg.override == '1') msg.override = 'on'
+
+          // Store override, unless trigger
+          if (!msg.override.match(/^(trigger)$/i)) node.override = msg.override.toLowerCase()
+          else node.manualTrigger = true
+
+          evaluate()
+        } else node.warn('Failed to interpret incoming msg.override. Ignoring it!')
+      }
+
     })
 
     // re-evaluate every minute
