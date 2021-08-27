@@ -113,7 +113,7 @@ module.exports = function(RED) {
     }
 
     node.on('input', function(msg) {
-      if !msg.override {
+      if (!msg.override) {
         msg.payload = msg.payload.toString() // Make sure we have a string.
         if (msg.payload.match(/^(1|on|0|off|auto|stop|schedule-only|light-only|trigger)$/i)) {
           if (msg.payload == '0') msg.payload = 'off'
