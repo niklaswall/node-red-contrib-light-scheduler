@@ -59,12 +59,22 @@ module.exports = function(RED) {
       })
     }
 
+    function evaluateNodeProperty(propName, propValue, propType, node, msg) {
+      try {
+          return RED.util.evaluateNodeProperty(propValue, propType, node, msg)
+      } 
+      catch(err) {
+          node.warn('Failed to interpret ' + propName + '. Ignoring it!. Reason:' + err)
+          return msg.payload
+      }
+    }
+
     function setState(out) {
       var msg = {
         topic: node.topic,
       }
-      if (out) msg.payload = RED.util.evaluateNodeProperty(node.onPayload, node.onPayloadType, node, msg)
-      else msg.payload = RED.util.evaluateNodeProperty(node.offPayload, node.offPayloadType, node, msg)
+      if (out) msg.payload = evaluateNodeProperty('onPayload', node.onPayload, node.onPayloadType, node, msg)
+      else msg.payload = evaluateNodeProperty('offPayload', node.offPayload, node.offPayloadType, node, msg)
 
       var sunElevation = ''
       if (node.sunShowElevationInStatus) {
