@@ -5,7 +5,7 @@
   "description": "Light Scheduler is a node-red node that provides a weekly schedule, and is mainly focused on controlling light in home automation scenarios.",
   "license": "Apache-2.0",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^1.6.0",
     "suncalc": "^1.8.0"
   },
   "scripts": {
