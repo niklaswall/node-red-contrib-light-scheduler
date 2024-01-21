@@ -341,9 +341,9 @@
   <p>For more information on planned features and changes please <a href="https://github.com/niklaswall/node-red-contrib-light-scheduler#planned-features--changes">read here</a>.</p>
   <h3>Inputs</h3>
   <dl class="message-properties">
-    <dt>payload <span class="property-type">string</span></dt>
+    <dt>override <span class="property-type">string</span></dt>
     <dd>
-      <p>The <code>msg.payload</code> will be used to set the override-mode of the light scheduler.</p>
+      <p>The <code>msg.override</code> will be used to set the override-mode of the light scheduler.</p>
       <p>Valid overrides:
       <ul>
         <li>auto - Removes the override and act according to configuration.</li>
@@ -354,7 +354,8 @@
         <li>schedule-only - Ignores the light level and turns ON according to schedule.</li>
         <li>trigger - Force output according to the ongoing settings.</li>
       </ul>
-      <i>Please Note:</i> The override is runtime only and will revert to auto during deploy / restart.
+      <i>Please Note:</i> The override is runtime only and will revert to auto during deploy / restart. <br/>
+      <i>Also Note:</i> the <code>msg.override</code> method replaces the former method of passing the override information in the payload of this message and the old method has now been deprecated and may be removed in subsequent versions.
       </p>
     </dd>
   </dl>
