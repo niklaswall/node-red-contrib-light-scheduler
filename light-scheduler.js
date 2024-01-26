@@ -42,20 +42,22 @@ module.exports = function(RED) {
       node.runningEvents = node.events.map(event => {
         var minutes = event.end.mod - event.start.mod
 
+        let new_event = JSON.parse(JSON.stringify(event))
+
         // Prevent randomization of event that start and end at midnight to
         // prevent "gaps" when the schedule continuous past midnight.
         // TODO: Handle all events that is back-to-back after each other.
-        if (event.start.mod !== 0) event.start.mod = event.start.mod + offsetMOD()
+        if (event.start.mod !== 0) new_event.start.mod = event.start.mod + offsetMOD()
 
         if (event.end.mod !== 0) {
-          event.end.mod = event.end.mod + offsetMOD()
+          new_event.end.mod = event.end.mod + offsetMOD()
 
           if (event.end.mod <= event.start.mod)
             // Handle "too short events"
-            event.end.mod = event.start.mod + minutes // Events can overlap, but we don't need to care about that
+            new_event.end.mod = event.start.mod + minutes // Events can overlap, but we don't need to care about that
         }
 
-        return event
+        return new_event
       })
     }
 
